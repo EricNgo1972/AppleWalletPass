@@ -1,0 +1,111 @@
+@page "/passes/settings"
+@inject WalletSigningSettingsStore SettingsStore
+
+<PageTitle>Signing Settings</PageTitle>
+
+<MudGrid>
+    <MudItem xs="12" lg="7">
+        <MudPaper Class="pa-4 settings-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.overline" Class="mud-text-secondary">Signing Settings</MudText>
+                    <MudText Typo="Typo.h4">Wallet certificate and identifiers</MudText>
+                    <MudText Typo="Typo.body2">These app-wide settings are encrypted at rest and used for server-side pass signing.</MudText>
+                </MudStack>
+
+                @if (!string.IsNullOrWhiteSpace(_statusMessage))
+                {
+                    <MudAlert Severity="@_statusSeverity" Variant="Variant.Outlined">@_statusMessage</MudAlert>
+                }
+
+                @if (_model is null)
+                {
+                    <MudProgressCircular Indeterminate="true" />
+                }
+                else
+                {
+                    <MudTextField @bind-Value="_model.PassTypeIdentifier" Label="Pass Type Identifier" Variant="Variant.Outlined" Placeholder="pass.com.example.membership" />
+                    <MudTextField @bind-Value="_model.TeamIdentifier" Label="Team Identifier" Variant="Variant.Outlined" Placeholder="ABC123XYZ" />
+                    <MudTextField @bind-Value="_model.DefaultOrganizationName" Label="Default Organization Name" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="_model.CertificatePassword" Label="Certificate Password" Variant="Variant.Outlined" InputType="InputType.Password" />
+
+                    <MudPaper Class="pa-3 asset-card" Outlined="true">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.subtitle2">Signing Certificate (.p12 / .pfx)</MudText>
+                            <InputFile OnChange="OnCertificateSelected" accept=".p12,.pfx,application/x-pkcs12" />
+                            <MudText Typo="Typo.caption">@GetCertificateLabel()</MudText>
+                        </MudStack>
+                    </MudPaper>
+
+                    <MudStack Row="true" Justify="Justify.FlexEnd">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync">Save Settings</MudButton>
+                    </MudStack>
+                }
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private WalletSigningSettingsViewModel? _model;
+    private IBrowserFile? _certificateFile;
+    private string? _statusMessage;
+    private Severity _statusSeverity = Severity.Info;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _model = await SettingsStore.GetAsync(CancellationToken.None);
+    }
+
+    private void OnCertificateSelected(InputFileChangeEventArgs args)
+        => _certificateFile = args.File;
+
+    private async Task SaveAsync()
+    {
+        if (_model is null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_model.PassTypeIdentifier) ||
+            string.IsNullOrWhiteSpace(_model.TeamIdentifier) ||
+            string.IsNullOrWhiteSpace(_model.CertificatePassword))
+        {
+            _statusSeverity = Severity.Error;
+            _statusMessage = "Pass type identifier, team identifier, and certificate password are required.";
+            return;
+        }
+
+        await using var stream = _certificateFile?.OpenReadStream(10_000_000);
+        await SettingsStore.SaveAsync(
+            new WalletSigningSettingsInput
+            {
+                PassTypeIdentifier = _model.PassTypeIdentifier,
+                TeamIdentifier = _model.TeamIdentifier,
+                DefaultOrganizationName = _model.DefaultOrganizationName,
+                CertificatePassword = _model.CertificatePassword
+            },
+            stream,
+            CancellationToken.None);
+
+        _model = await SettingsStore.GetAsync(CancellationToken.None);
+        _certificateFile = null;
+        _statusSeverity = Severity.Success;
+        _statusMessage = "Wallet signing settings saved.";
+    }
+
+    private string GetCertificateLabel()
+    {
+        if (_certificateFile is not null)
+        {
+            return _certificateFile.Name;
+        }
+
+        if (_model?.HasCertificate == true)
+        {
+            return "A certificate is already stored. Upload a new file to replace it.";
+        }
+
+        return "No certificate uploaded yet.";
+    }
+}

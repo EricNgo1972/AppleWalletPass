@@ -1,0 +1,376 @@
+html, body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+}
+
+.app-shell {
+    min-height: 100vh;
+}
+
+.theme-dark {
+    --designer-bg:
+        radial-gradient(circle at top left, rgba(36, 92, 157, 0.14), transparent 34%),
+        radial-gradient(circle at top right, rgba(178, 56, 111, 0.18), transparent 28%),
+        #161717;
+    --designer-text: #f3f3f3;
+    --designer-appbar: rgba(18, 18, 18, 0.86);
+    --designer-appbar-text: #f3f6fb;
+    --designer-drawer: #1a1b1d;
+    --panel-bg: rgba(28, 28, 29, 0.82);
+    --panel-border: rgba(255, 255, 255, 0.06);
+    --asset-bg: rgba(255, 255, 255, 0.02);
+    --swatch-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    --swatch-outline: rgba(255,255,255,0.9);
+}
+
+.theme-light {
+    --designer-bg:
+        radial-gradient(circle at top left, rgba(20, 93, 160, 0.10), transparent 34%),
+        radial-gradient(circle at top right, rgba(200, 75, 49, 0.12), transparent 28%),
+        #eef3f8;
+    --designer-text: #17212b;
+    --designer-appbar: rgba(255, 255, 255, 0.88);
+    --designer-appbar-text: #17324a;
+    --designer-drawer: rgba(239, 244, 249, 0.98);
+    --panel-bg: rgba(255, 255, 255, 0.8);
+    --panel-border: rgba(18, 29, 43, 0.08);
+    --asset-bg: rgba(18, 29, 43, 0.03);
+    --swatch-shadow: inset 0 0 0 1px rgba(18,29,43,0.08);
+    --swatch-outline: rgba(18,29,43,0.9);
+}
+
+.theme-dark,
+.theme-light {
+    background: var(--designer-bg);
+    color: var(--designer-text);
+}
+
+code {
+    color: #ffbf78;
+}
+
+.designer-appbar {
+    background: var(--designer-appbar) !important;
+    color: var(--designer-appbar-text) !important;
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--panel-border);
+}
+
+.designer-appbar .mud-icon-root,
+.designer-appbar .mud-button-root,
+.designer-appbar .mud-icon-button-root,
+.designer-appbar .mud-typography {
+    color: var(--designer-appbar-text) !important;
+}
+
+.designer-drawer {
+    background: var(--designer-drawer);
+}
+
+.designer-main {
+    min-height: 100vh;
+}
+
+.pass-editor-panel,
+.settings-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 24px;
+    backdrop-filter: blur(16px);
+}
+
+.preview-panel {
+    background:
+        radial-gradient(circle at top, rgba(219, 229, 240, 0.9), rgba(244, 247, 250, 0.96) 46%, #eef2f6 100%);
+    border: 1px solid rgba(22, 38, 58, 0.08);
+    border-radius: 28px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    backdrop-filter: none;
+}
+
+.preview-panel-header {
+    color: #17212b;
+}
+
+.preview-panel-kicker {
+    color: #6f7d8c !important;
+}
+
+.preview-panel-title {
+    color: #1f2d3a !important;
+}
+
+.wallet-preview-viewport {
+    border-radius: 24px;
+    padding: 1.25rem 0.75rem 1.5rem;
+    background:
+        radial-gradient(circle at center top, rgba(255,255,255,0.85), rgba(239,243,247,0) 44%),
+        linear-gradient(180deg, rgba(255,255,255,0.26), rgba(207,216,225,0.08));
+}
+
+.asset-card {
+    background: var(--asset-bg);
+    border-radius: 18px;
+}
+
+.color-swatch {
+    border-radius: 999px !important;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    box-shadow: var(--swatch-shadow);
+}
+
+.color-swatch.selected {
+    outline: 2px solid var(--swatch-outline);
+    outline-offset: 2px;
+}
+
+.pass-preview-shell {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0 0.25rem;
+}
+
+.pass-preview-card {
+    position: relative;
+    overflow: hidden;
+    width: 320px;
+    min-height: 520px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.38);
+    isolation: isolate;
+    color: #f7fbff;
+}
+
+.pass-preview-background,
+.pass-preview-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.pass-preview-background {
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.pass-preview-overlay {
+    z-index: 1;
+}
+
+.pass-preview-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    min-height: 520px;
+    padding: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.95rem;
+}
+
+.pass-preview-content,
+.pass-preview-content * {
+    color: inherit;
+}
+
+.pass-preview-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.pass-preview-brand {
+    min-width: 0;
+}
+
+.pass-preview-org {
+    font-size: 0.74rem;
+    color: rgba(244, 248, 252, 0.82);
+}
+
+.wallet-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.pass-preview-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.05;
+    margin-top: 0.1rem;
+}
+
+.pass-preview-subtitle {
+    margin-top: 0.15rem;
+    color: rgba(235, 241, 247, 0.88);
+    font-size: 0.9rem;
+}
+
+.wallet-subtitle {
+    margin-top: -0.15rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(236, 242, 247, 0.9);
+}
+
+.boarding-hero {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 0.75rem;
+}
+
+.boarding-endpoint span {
+    display: block;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(241, 246, 252, 0.76);
+}
+
+.boarding-endpoint strong {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 1.65rem;
+    line-height: 1;
+}
+
+.boarding-endpoint.align-right {
+    text-align: right;
+}
+
+.boarding-transit {
+    align-self: center;
+    font-size: 1.1rem;
+    color: rgba(241, 246, 252, 0.8);
+}
+
+.pass-preview-logo,
+.pass-preview-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.14);
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.wallet-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.field-grid-coupon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem 0.75rem;
+}
+
+.field-grid-storecard {
+    margin-top: 0.15rem;
+}
+
+.pass-preview-field span {
+    display: block;
+    font-size: 0.65rem;
+    color: rgba(239, 245, 251, 0.72);
+    letter-spacing: 0.08em;
+}
+
+.pass-preview-field strong {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 1rem;
+    color: #ffffff;
+}
+
+.pass-preview-field.field-wide {
+    grid-column: 1 / -1;
+}
+
+.pass-preview-barcode {
+    margin-top: auto;
+    background: rgba(255,255,255,0.96);
+    color: #111;
+    border-radius: 18px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.barcode-image {
+    display: block;
+    background: #fff;
+}
+
+.barcode-matrix {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+}
+
+.barcode-linear {
+    width: 100%;
+    max-width: 260px;
+    height: 96px;
+    object-fit: contain;
+}
+
+.barcode-caption {
+    margin-top: 0.75rem;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #555;
+    letter-spacing: 0.06em;
+}
+
+.pass-preview-card {
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.38);
+}
+
+.pass-type-boarding .pass-preview-barcode {
+    border-radius: 14px 14px 22px 22px;
+}
+
+.pass-type-coupon .pass-preview-card {
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.34), inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.pass-type-coupon .pass-preview-content::before,
+.pass-type-coupon .pass-preview-content::after {
+    content: "";
+    position: absolute;
+    top: 44%;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--panel-bg);
+    transform: translateY(-50%);
+}
+
+.pass-type-coupon .pass-preview-content::before {
+    left: -24px;
+}
+
+.pass-type-coupon .pass-preview-content::after {
+    right: -24px;
+}

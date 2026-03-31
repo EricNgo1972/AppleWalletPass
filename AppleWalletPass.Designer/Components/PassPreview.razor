@@ -1,0 +1,197 @@
+@using System.Globalization
+@inject BarcodePreviewRenderer BarcodeRenderer
+
+<div class="pass-preview-shell">
+    <div class="pass-preview-card @GetPassTypeCssClass()">
+        @if (!string.IsNullOrWhiteSpace(Model.BackgroundAsset.PreviewUrl))
+        {
+            <div class="pass-preview-background" style="@BuildBackgroundImageStyle()"></div>
+        }
+
+        <div class="pass-preview-overlay" style="@BuildOverlayStyle()"></div>
+
+        <div class="pass-preview-content">
+            <div class="pass-preview-header">
+                <div class="pass-preview-brand">
+                    <div class="pass-preview-org">@(string.IsNullOrWhiteSpace(Model.OrganizationName) ? "Organization" : Model.OrganizationName)</div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.LogoAsset.PreviewUrl))
+                {
+                    <img class="pass-preview-logo" src="@Model.LogoAsset.PreviewUrl" alt="Logo preview" />
+                }
+                else
+                {
+                    <div class="pass-preview-badge">@GetBadgeText()</div>
+                }
+            </div>
+
+            @switch (Model.PassType)
+            {
+                case DesignerPassType.Boarding:
+                    <div class="wallet-hero boarding-hero">
+                        <div class="boarding-endpoint">
+                            <span>@GetBoardingPrimary(0).Label</span>
+                            <strong>@GetBoardingPrimary(0).Value</strong>
+                        </div>
+                        <div class="boarding-transit">✈</div>
+                        <div class="boarding-endpoint align-right">
+                            <span>@GetBoardingPrimary(1).Label</span>
+                            <strong>@GetBoardingPrimary(1).Value</strong>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+                    {
+                        <div class="wallet-subtitle">@Model.Subtitle</div>
+                    }
+                    break;
+                default:
+                    <div class="wallet-hero">
+                        <div class="pass-preview-title">@(string.IsNullOrWhiteSpace(Model.Title) ? "Pass title" : Model.Title)</div>
+                        @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+                        {
+                            <div class="pass-preview-subtitle">@Model.Subtitle</div>
+                        }
+                    </div>
+                    break;
+            }
+
+            <div class="wallet-field-grid @GetFieldGridCssClass()">
+                @foreach (var field in GetVisibleFields())
+                {
+                    <div class="pass-preview-field @GetFieldCssClass(field.Index)">
+                        <span>@field.Label.ToUpperInvariant()</span>
+                        <strong>@field.Value</strong>
+                    </div>
+                }
+            </div>
+
+            @if (Model.BarcodeStyle != DesignerBarcodeStyle.None)
+            {
+                <div class="pass-preview-barcode">
+                    @if (!string.IsNullOrWhiteSpace(GetBarcodePreviewUrl()))
+                    {
+                        <img class="barcode-image @GetBarcodeCssClass()" src="@GetBarcodePreviewUrl()" alt="@($"{Model.BarcodeStyle} preview")" />
+                    }
+                    <div class="barcode-caption">@GetBarcodeCaption()</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required PassDesignerModel Model { get; set; }
+
+    private IReadOnlyList<PreviewField> GetVisibleFields()
+    {
+        var fields = Model.Fields
+            .Where(static f => !string.IsNullOrWhiteSpace(f.Label) && !string.IsNullOrWhiteSpace(f.Value))
+            .Select((field, index) => new PreviewField(index, field.Label, field.Value))
+            .ToList();
+
+        return Model.PassType switch
+        {
+            DesignerPassType.Boarding => fields.Skip(2).Take(4).ToList(),
+            DesignerPassType.Event => fields.Take(4).ToList(),
+            DesignerPassType.Coupon => fields.Take(4).ToList(),
+            _ => fields.Take(4).ToList()
+        };
+    }
+
+    private PreviewField GetBoardingPrimary(int index)
+    {
+        var fields = Model.Fields
+            .Where(static f => !string.IsNullOrWhiteSpace(f.Label) && !string.IsNullOrWhiteSpace(f.Value))
+            .ToList();
+
+        if (fields.Count > index)
+        {
+            var field = fields[index];
+            return new PreviewField(index, field.Label, field.Value);
+        }
+
+        return index == 0
+            ? new PreviewField(0, "From", "AAA")
+            : new PreviewField(1, "To", "BBB");
+    }
+
+    private string GetBadgeText()
+    {
+        var source = string.IsNullOrWhiteSpace(Model.OrganizationName) ? Model.Title : Model.OrganizationName;
+        return string.IsNullOrWhiteSpace(source)
+            ? "AP"
+            : new string(source
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Take(2)
+                .Select(static part => char.ToUpperInvariant(part[0]))
+                .ToArray());
+    }
+
+    private string BuildOverlayStyle()
+    {
+        var rgb = ParseHexColor(Model.BackgroundColor);
+        var overlayOpacity = string.IsNullOrWhiteSpace(Model.BackgroundAsset.PreviewUrl) ? "1" : "0.72";
+        return $"background-image: linear-gradient(180deg, rgba({rgb.r}, {rgb.g}, {rgb.b}, {overlayOpacity}) 0%, rgba({Math.Max(rgb.r - 14, 0)}, {Math.Max(rgb.g - 14, 0)}, {Math.Max(rgb.b - 14, 0)}, {overlayOpacity}) 100%);";
+    }
+
+    private string BuildBackgroundImageStyle()
+        => string.IsNullOrWhiteSpace(Model.BackgroundAsset.PreviewUrl)
+            ? string.Empty
+            : $"background-image: url('{Model.BackgroundAsset.PreviewUrl}');";
+
+    private string GetPassTypeCssClass()
+        => Model.PassType switch
+        {
+            DesignerPassType.Boarding => "pass-type-boarding",
+            DesignerPassType.Event => "pass-type-event",
+            DesignerPassType.Coupon => "pass-type-coupon",
+            _ => "pass-type-storecard"
+        };
+
+    private string? GetBarcodePreviewUrl()
+        => BarcodeRenderer.BuildDataUrl(Model.BarcodeStyle, GetBarcodePayload());
+
+    private string GetBarcodePayload()
+        => string.IsNullOrWhiteSpace(Model.BarcodeMessage) ? Model.SerialNumber : Model.BarcodeMessage.Trim();
+
+    private string GetBarcodeCaption()
+        => string.IsNullOrWhiteSpace(Model.BarcodeAltText) ? Model.SerialNumber : Model.BarcodeAltText.Trim();
+
+    private string GetBarcodeCssClass()
+        => Model.BarcodeStyle == DesignerBarcodeStyle.Code128 ? "barcode-linear" : "barcode-matrix";
+
+    private string GetFieldGridCssClass()
+        => Model.PassType switch
+        {
+            DesignerPassType.Coupon => "field-grid-coupon",
+            DesignerPassType.StoreCard => "field-grid-storecard",
+            _ => "field-grid-default"
+        };
+
+    private string GetFieldCssClass(int index)
+        => Model.PassType == DesignerPassType.Coupon && index == 0 ? "field-wide" : string.Empty;
+
+    private static (int r, int g, int b) ParseHexColor(string value)
+    {
+        var hex = value.TrimStart('#');
+        if (hex.Length == 3)
+        {
+            hex = string.Concat(hex.Select(static c => $"{c}{c}"));
+        }
+
+        if (hex.Length != 6)
+        {
+            return (10, 61, 98);
+        }
+
+        return (
+            int.Parse(hex[..2], NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+            int.Parse(hex[2..4], NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+            int.Parse(hex[4..6], NumberStyles.HexNumber, CultureInfo.InvariantCulture));
+    }
+
+    private sealed record PreviewField(int Index, string Label, string Value);
+}

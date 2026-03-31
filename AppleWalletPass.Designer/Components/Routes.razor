@@ -1,0 +1,39 @@
+﻿@implements IDisposable
+@inject ThemeState ThemeState
+
+<div class="app-shell @(ThemeState.IsDarkMode ? "theme-dark" : "theme-light")">
+<MudThemeProvider Theme="@ThemeState.CurrentTheme" IsDarkMode="@ThemeState.IsDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<Router AppAssembly="typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <MudPaper Class="pa-8">
+                <MudText Typo="Typo.h4">Page Not Found</MudText>
+                <MudText Typo="Typo.body1">The requested page does not exist.</MudText>
+            </MudPaper>
+        </LayoutView>
+    </NotFound>
+</Router>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        ThemeState.Changed += OnThemeChanged;
+    }
+
+    public void Dispose()
+    {
+        ThemeState.Changed -= OnThemeChanged;
+    }
+
+    private void OnThemeChanged()
+        => InvokeAsync(StateHasChanged);
+}
