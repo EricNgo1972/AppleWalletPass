@@ -109,6 +109,11 @@ public sealed class WalletPassGenerationService(
             builder.AddAuxiliaryField(Slugify(field.Label), field.Label.ToUpperInvariant(), field.Value);
         }
 
+        foreach (var field in design.BackFields.Where(static f => !string.IsNullOrWhiteSpace(f.Label) && !string.IsNullOrWhiteSpace(f.Value)).Take(12))
+        {
+            builder.AddBackField(Slugify(field.Label), field.Label, field.Value);
+        }
+
         switch (design.BarcodeStyle)
         {
             case DesignerBarcodeStyle.None:

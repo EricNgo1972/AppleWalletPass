@@ -26,6 +26,19 @@ body {
     --asset-bg: rgba(255, 255, 255, 0.02);
     --swatch-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
     --swatch-outline: rgba(255,255,255,0.9);
+    --preview-panel-bg:
+        radial-gradient(circle at top, rgba(49, 63, 82, 0.82), rgba(23, 29, 38, 0.96) 46%, rgba(18, 22, 29, 0.98) 100%);
+    --preview-panel-border: rgba(255, 255, 255, 0.08);
+    --preview-panel-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    --preview-panel-text: #edf3f8;
+    --preview-panel-kicker-text: #a9b8c8;
+    --preview-viewport-bg:
+        radial-gradient(circle at center top, rgba(255,255,255,0.08), rgba(239,243,247,0) 44%),
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(207,216,225,0.03));
+    --preview-chip-border: rgba(255,255,255,0.14);
+    --preview-chip-text: #edf3f8;
+    --preview-chip-selected-bg: rgba(88, 159, 255, 0.18);
+    --preview-chip-selected-border: rgba(115, 178, 255, 0.4);
 }
 
 .theme-light {
@@ -42,6 +55,19 @@ body {
     --asset-bg: rgba(18, 29, 43, 0.03);
     --swatch-shadow: inset 0 0 0 1px rgba(18,29,43,0.08);
     --swatch-outline: rgba(18,29,43,0.9);
+    --preview-panel-bg:
+        radial-gradient(circle at top, rgba(219, 229, 240, 0.9), rgba(244, 247, 250, 0.96) 46%, #eef2f6 100%);
+    --preview-panel-border: rgba(22, 38, 58, 0.08);
+    --preview-panel-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    --preview-panel-text: #17212b;
+    --preview-panel-kicker-text: #6f7d8c;
+    --preview-viewport-bg:
+        radial-gradient(circle at center top, rgba(255,255,255,0.85), rgba(239,243,247,0) 44%),
+        linear-gradient(180deg, rgba(255,255,255,0.26), rgba(207,216,225,0.08));
+    --preview-chip-border: rgba(18, 29, 43, 0.12);
+    --preview-chip-text: #1f2d3a;
+    --preview-chip-selected-bg: rgba(20, 100, 179, 0.12);
+    --preview-chip-selected-border: rgba(20, 100, 179, 0.28);
 }
 
 .theme-dark,
@@ -85,37 +111,55 @@ code {
 }
 
 .preview-panel {
-    background:
-        radial-gradient(circle at top, rgba(219, 229, 240, 0.9), rgba(244, 247, 250, 0.96) 46%, #eef2f6 100%);
-    border: 1px solid rgba(22, 38, 58, 0.08);
+    background: var(--preview-panel-bg);
+    border: 1px solid var(--preview-panel-border);
     border-radius: 28px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    box-shadow: var(--preview-panel-shadow);
     backdrop-filter: none;
 }
 
 .preview-panel-header {
-    color: #17212b;
+    color: var(--preview-panel-text);
 }
 
 .preview-panel-kicker {
-    color: #6f7d8c !important;
+    color: var(--preview-panel-kicker-text) !important;
 }
 
 .preview-panel-title {
-    color: #1f2d3a !important;
+    color: var(--preview-panel-text) !important;
+}
+
+.preview-panel .mud-chipset {
+    gap: 0.5rem;
+}
+
+.preview-panel .mud-chip {
+    color: var(--preview-chip-text);
+    border-color: var(--preview-chip-border);
+    background: transparent;
+}
+
+.preview-panel .mud-chip.mud-chip-selected {
+    color: var(--preview-chip-text);
+    background: var(--preview-chip-selected-bg);
+    border-color: var(--preview-chip-selected-border);
 }
 
 .wallet-preview-viewport {
     border-radius: 24px;
     padding: 1.25rem 0.75rem 1.5rem;
-    background:
-        radial-gradient(circle at center top, rgba(255,255,255,0.85), rgba(239,243,247,0) 44%),
-        linear-gradient(180deg, rgba(255,255,255,0.26), rgba(207,216,225,0.08));
+    background: var(--preview-viewport-bg);
 }
 
 .asset-card {
     background: var(--asset-bg);
     border-radius: 18px;
+}
+
+.asset-help {
+    opacity: 0.78;
+    line-height: 1.35;
 }
 
 .color-swatch {
@@ -133,8 +177,71 @@ code {
 
 .pass-preview-shell {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 1rem;
     padding: 1rem 0 0.25rem;
+}
+
+.wallet-surface-preview {
+    width: 100%;
+    max-width: 320px;
+}
+
+.wallet-surface-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0.9rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(24, 40, 61, 0.08);
+    box-shadow: 0 12px 24px rgba(35, 56, 84, 0.08);
+}
+
+.wallet-surface-leading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.wallet-surface-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex: 0 0 auto;
+}
+
+.wallet-surface-icon-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #245d92;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.wallet-surface-copy {
+    min-width: 0;
+}
+
+.wallet-surface-title {
+    color: #182534;
+    font-size: 0.95rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wallet-surface-subtitle {
+    color: #667789;
+    font-size: 0.72rem;
+    margin-top: 0.1rem;
 }
 
 .pass-preview-card {
@@ -183,6 +290,81 @@ code {
 .pass-preview-content,
 .pass-preview-content * {
     color: inherit;
+}
+
+.pass-back-detail {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    min-height: 520px;
+    padding: 1.05rem;
+    gap: 0.9rem;
+}
+
+.pass-back-top {
+    padding: 0.1rem 0.1rem 0;
+}
+
+.pass-back-title {
+    margin-top: 0.35rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #ffffff;
+}
+
+.pass-back-subtitle {
+    margin-top: 0.2rem;
+    color: rgba(235, 241, 247, 0.88);
+    font-size: 0.9rem;
+}
+
+.pass-back-sheet {
+    margin-top: 0.1rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 22px;
+    padding: 0.35rem 0;
+    color: #11202e;
+    box-shadow: 0 16px 32px rgba(10, 22, 38, 0.18);
+}
+
+.pass-back-row {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid rgba(17, 32, 46, 0.08);
+}
+
+.pass-back-row:last-child {
+    border-bottom: 0;
+}
+
+.pass-back-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6d7e90;
+}
+
+.pass-back-value {
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #132232;
+}
+
+.pass-back-link {
+    color: #1464b3;
+}
+
+.back-row-link .pass-back-value {
+    font-weight: 600;
+}
+
+.back-row-multiline .pass-back-value {
+    line-height: 1.55;
 }
 
 .pass-preview-header {

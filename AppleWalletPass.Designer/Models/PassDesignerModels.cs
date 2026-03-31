@@ -26,6 +26,13 @@ public enum DesignerAssetSlot
     Background
 }
 
+public enum BackFieldType
+{
+    PlainText,
+    Link,
+    MultilineText
+}
+
 public sealed class PassFieldInputModel
 {
     public string Key { get; set; } = Guid.NewGuid().ToString("N")[..8];
@@ -35,6 +42,20 @@ public sealed class PassFieldInputModel
 
     [Required]
     public string Value { get; set; } = string.Empty;
+}
+
+public sealed class BackFieldInputModel
+{
+    public string Key { get; set; } = Guid.NewGuid().ToString("N")[..8];
+
+    [Required]
+    public string Label { get; set; } = string.Empty;
+
+    [Required]
+    public string Value { get; set; } = string.Empty;
+
+    [Required]
+    public BackFieldType Type { get; set; } = BackFieldType.PlainText;
 }
 
 public sealed class DesignerAssetReference
@@ -86,6 +107,12 @@ public sealed class PassDesignerModel
     [
         new() { Label = "Customer", Value = "Eric Ngo" },
         new() { Label = "MemberSince", Value = "Apr 12" }
+    ];
+
+    public List<BackFieldInputModel> BackFields { get; set; } =
+    [
+        new() { Label = "Website", Value = "https://example.com/pass", Type = BackFieldType.Link },
+        new() { Label = "Support", Value = "support@example.com", Type = BackFieldType.PlainText }
     ];
 
     public DesignerAssetReference IconAsset { get; set; } = new() { Slot = DesignerAssetSlot.Icon };

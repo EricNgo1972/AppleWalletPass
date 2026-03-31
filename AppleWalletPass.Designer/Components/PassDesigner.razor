@@ -53,6 +53,9 @@
                                 <MudText Typo="Typo.subtitle2">Icon</MudText>
                                 <InputFile OnChange="@(args => UploadAssetAsync(args, DesignerAssetSlot.Icon))" accept="image/*" />
                                 <MudText Typo="Typo.caption">@GetAssetName(Model.IconAsset, "Upload icon")</MudText>
+                                <MudText Typo="Typo.caption" Class="asset-help">
+                                    Used by Wallet in list/stack views and notifications, not as the main face image.
+                                </MudText>
                             </MudStack>
                         </MudPaper>
                     </MudItem>
@@ -97,6 +100,47 @@
                     </MudStack>
                 </div>
 
+                <div>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
+                        <MudText Typo="Typo.subtitle2">Back fields</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">Shown in Wallet detail view</MudText>
+                    </MudStack>
+
+                    <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mb-3">
+                        <MudChip T="string" Variant="Variant.Outlined" OnClick='@(() => AddBackFieldPreset("Website", "https://example.com/pass", BackFieldType.Link))'>Website</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" OnClick='@(() => AddBackFieldPreset("Support Email", "support@example.com", BackFieldType.Link))'>Support email</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" OnClick='@(() => AddBackFieldPreset("Terms", "Valid through Apr 30. One redemption per member.", BackFieldType.MultilineText))'>Terms</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" OnClick='@(() => AddBackFieldPreset("Address", "123 Main Street\nNew York, NY 10001", BackFieldType.MultilineText))'>Address</MudChip>
+                    </MudStack>
+
+                    <MudStack Spacing="2">
+                        @foreach (var field in Model.BackFields)
+                        {
+                            <MudPaper Class="pa-3 asset-card" Outlined="true">
+                                <MudGrid>
+                                    <MudItem xs="12" md="3">
+                                        <MudSelect T="BackFieldType" @bind-Value="field.Type" Label="Type" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                            <MudSelectItem T="BackFieldType" Value="BackFieldType.PlainText">Plain text</MudSelectItem>
+                                            <MudSelectItem T="BackFieldType" Value="BackFieldType.Link">Link</MudSelectItem>
+                                            <MudSelectItem T="BackFieldType" Value="BackFieldType.MultilineText">Multiline</MudSelectItem>
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="12" md="3">
+                                        <MudTextField @bind-Value="field.Label" Placeholder="Label" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    </MudItem>
+                                    <MudItem xs="10" md="5">
+                                        <MudTextField @bind-Value="field.Value" Placeholder="Value" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="@(field.Type == BackFieldType.MultilineText ? 3 : 1)" />
+                                    </MudItem>
+                                    <MudItem xs="2" md="1" Class="d-flex align-center justify-center">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="@(() => RemoveBackField(field))" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudPaper>
+                        }
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="AddBackField">Add back field</MudButton>
+                    </MudStack>
+                </div>
+
                 <MudSelect T="DesignerBarcodeStyle" @bind-Value="Model.BarcodeStyle" Label="Barcode style" Variant="Variant.Outlined">
                     <MudSelectItem T="DesignerBarcodeStyle" Value="DesignerBarcodeStyle.QrCode">QR code</MudSelectItem>
                     <MudSelectItem T="DesignerBarcodeStyle" Value="DesignerBarcodeStyle.Pdf417">PDF417</MudSelectItem>
@@ -128,21 +172,26 @@
 
     <MudItem xs="12" xl="5">
         <MudPaper Class="pa-4 preview-panel" Elevation="0">
-            <MudStack Spacing="3">
-                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="preview-panel-header">
-                    <div>
-                        <MudText Typo="Typo.overline" Class="preview-panel-kicker">Preview</MudText>
-                        <MudText Typo="Typo.h5" Class="preview-panel-title">Live pass preview</MudText>
-                    </div>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" Disabled="@IsDownloading" OnClick="DownloadAsync">
-                        @(IsDownloading ? "Generating..." : "Download .pkpass")
-                    </MudButton>
-                </MudStack>
+                <MudStack Spacing="3">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="preview-panel-header">
+                        <div>
+                            <MudText Typo="Typo.overline" Class="preview-panel-kicker">Preview</MudText>
+                            <MudText Typo="Typo.h5" Class="preview-panel-title">Live pass preview</MudText>
+                        </div>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download" Disabled="@IsDownloading" OnClick="DownloadAsync">
+                            @(IsDownloading ? "Generating..." : "Download .pkpass")
+                        </MudButton>
+                    </MudStack>
 
-                <div class="wallet-preview-viewport">
-                    <PassPreview Model="Model" />
-                </div>
-            </MudStack>
+                    <MudChipSet T="PreviewMode" SelectionMode="SelectionMode.SingleSelection" CheckMark="false" SelectedValue="@CurrentPreviewMode" SelectedValueChanged="OnPreviewModeChanged">
+                        <MudChip T="PreviewMode" Value="PreviewMode.Front">Front</MudChip>
+                        <MudChip T="PreviewMode" Value="PreviewMode.Back">Back detail</MudChip>
+                    </MudChipSet>
+
+                    <div class="wallet-preview-viewport">
+                        <PassPreview Model="Model" ShowBack="@IsBackPreview" />
+                    </div>
+                </MudStack>
         </MudPaper>
     </MudItem>
 </MudGrid>
@@ -170,6 +219,10 @@
     ];
 
     private bool IsDownloading { get; set; }
+
+    private PreviewMode CurrentPreviewMode { get; set; }
+
+    private bool IsBackPreview => CurrentPreviewMode == PreviewMode.Back;
 
     private async Task UploadAssetAsync(InputFileChangeEventArgs args, DesignerAssetSlot slot)
     {
@@ -217,6 +270,9 @@
     private void AddField()
         => Model.Fields.Add(new PassFieldInputModel());
 
+    private void AddBackField()
+        => Model.BackFields.Add(new BackFieldInputModel());
+
     private void RemoveField(PassFieldInputModel field)
     {
         if (Model.Fields.Count == 1)
@@ -227,6 +283,19 @@
         }
 
         Model.Fields.Remove(field);
+    }
+
+    private void RemoveBackField(BackFieldInputModel field)
+    {
+        if (Model.BackFields.Count == 1)
+        {
+            field.Label = string.Empty;
+            field.Value = string.Empty;
+            field.Type = BackFieldType.PlainText;
+            return;
+        }
+
+        Model.BackFields.Remove(field);
     }
 
     private Task OnPassTypeChanged(DesignerPassType passType)
@@ -245,6 +314,12 @@
                     new() { Label = "From", Value = "JFK" },
                     new() { Label = "To", Value = "LAX" }
                 ];
+                Model.BackFields =
+                [
+                    new() { Label = "Boarding time", Value = "10:25 AM", Type = BackFieldType.PlainText },
+                    new() { Label = "Gate info", Value = "Arrive at Gate B12 30 minutes before departure.", Type = BackFieldType.MultilineText },
+                    new() { Label = "Manage flight", Value = "https://example.com/boarding/PASS", Type = BackFieldType.Link }
+                ];
                 break;
             case DesignerPassType.Event:
                 Model.Title = "Event Ticket";
@@ -255,6 +330,12 @@
                 [
                     new() { Label = "Venue", Value = "Grand Hall" },
                     new() { Label = "Date", Value = "Apr 12" }
+                ];
+                Model.BackFields =
+                [
+                    new() { Label = "Doors open", Value = "7:00 PM", Type = BackFieldType.PlainText },
+                    new() { Label = "Venue address", Value = "500 Market Street\nSan Francisco, CA 94105", Type = BackFieldType.MultilineText },
+                    new() { Label = "Event details", Value = "https://example.com/event/PASS", Type = BackFieldType.Link }
                 ];
                 break;
             case DesignerPassType.Coupon:
@@ -267,6 +348,11 @@
                     new() { Label = "Code", Value = "SAVE20" },
                     new() { Label = "ValidUntil", Value = "Apr 30" }
                 ];
+                Model.BackFields =
+                [
+                    new() { Label = "Terms", Value = "One use per customer. Cannot be combined with other offers.", Type = BackFieldType.MultilineText },
+                    new() { Label = "Redeem online", Value = "https://example.com/coupon/PASS", Type = BackFieldType.Link }
+                ];
                 break;
             default:
                 Model.Title = "Rewards Card";
@@ -278,11 +364,26 @@
                     new() { Label = "Customer", Value = "Eric Ngo" },
                     new() { Label = "MemberSince", Value = "Apr 12" }
                 ];
+                Model.BackFields =
+                [
+                    new() { Label = "Support", Value = "support@example.com", Type = BackFieldType.PlainText },
+                    new() { Label = "Member portal", Value = "https://example.com/member/PASS", Type = BackFieldType.Link },
+                    new() { Label = "Benefits", Value = "Priority support\nMonthly bonus offers\nMember-exclusive events", Type = BackFieldType.MultilineText }
+                ];
                 break;
         }
 
         return Task.CompletedTask;
     }
+
+    private Task OnPreviewModeChanged(PreviewMode mode)
+    {
+        CurrentPreviewMode = mode;
+        return Task.CompletedTask;
+    }
+
+    private void AddBackFieldPreset(string label, string value, BackFieldType type)
+        => Model.BackFields.Add(new BackFieldInputModel { Label = label, Value = value, Type = type });
 
     private async Task DownloadAsync()
     {
@@ -336,4 +437,10 @@
 
     private static string GetAssetName(DesignerAssetReference asset, string fallback)
         => string.IsNullOrWhiteSpace(asset.FileName) ? fallback : asset.FileName;
+
+    private enum PreviewMode
+    {
+        Front,
+        Back
+    }
 }

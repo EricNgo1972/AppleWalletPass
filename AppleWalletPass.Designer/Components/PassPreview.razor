@@ -2,7 +2,26 @@
 @inject BarcodePreviewRenderer BarcodeRenderer
 
 <div class="pass-preview-shell">
-    <div class="pass-preview-card @GetPassTypeCssClass()">
+    <div class="wallet-surface-preview">
+        <div class="wallet-surface-card">
+            <div class="wallet-surface-leading">
+                @if (!string.IsNullOrWhiteSpace(Model.IconAsset.PreviewUrl))
+                {
+                    <img class="wallet-surface-icon" src="@Model.IconAsset.PreviewUrl" alt="Wallet icon preview" />
+                }
+                else
+                {
+                    <div class="wallet-surface-icon wallet-surface-icon-fallback">@GetBadgeText()</div>
+                }
+                <div class="wallet-surface-copy">
+                    <div class="wallet-surface-title">@Model.Title</div>
+                    <div class="wallet-surface-subtitle">Wallet list / stack icon</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pass-preview-card @GetPassTypeCssClass() @(ShowBack ? "pass-preview-back" : "pass-preview-front")">
         @if (!string.IsNullOrWhiteSpace(Model.BackgroundAsset.PreviewUrl))
         {
             <div class="pass-preview-background" style="@BuildBackgroundImageStyle()"></div>
@@ -10,80 +29,129 @@
 
         <div class="pass-preview-overlay" style="@BuildOverlayStyle()"></div>
 
-        <div class="pass-preview-content">
-            <div class="pass-preview-header">
-                <div class="pass-preview-brand">
-                    <div class="pass-preview-org">@(string.IsNullOrWhiteSpace(Model.OrganizationName) ? "Organization" : Model.OrganizationName)</div>
-                </div>
-
-                @if (!string.IsNullOrWhiteSpace(Model.LogoAsset.PreviewUrl))
-                {
-                    <img class="pass-preview-logo" src="@Model.LogoAsset.PreviewUrl" alt="Logo preview" />
-                }
-                else
-                {
-                    <div class="pass-preview-badge">@GetBadgeText()</div>
-                }
-            </div>
-
-            @switch (Model.PassType)
-            {
-                case DesignerPassType.Boarding:
-                    <div class="wallet-hero boarding-hero">
-                        <div class="boarding-endpoint">
-                            <span>@GetBoardingPrimary(0).Label</span>
-                            <strong>@GetBoardingPrimary(0).Value</strong>
+        @if (ShowBack)
+        {
+            <div class="pass-back-detail">
+                <div class="pass-back-top">
+                    <div class="pass-preview-header">
+                        <div class="pass-preview-brand">
+                            <div class="pass-preview-org">@(string.IsNullOrWhiteSpace(Model.OrganizationName) ? "Organization" : Model.OrganizationName)</div>
+                            <div class="pass-back-title">@(string.IsNullOrWhiteSpace(Model.Title) ? "Pass title" : Model.Title)</div>
+                            @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+                            {
+                                <div class="pass-back-subtitle">@Model.Subtitle</div>
+                            }
                         </div>
-                        <div class="boarding-transit">✈</div>
-                        <div class="boarding-endpoint align-right">
-                            <span>@GetBoardingPrimary(1).Label</span>
-                            <strong>@GetBoardingPrimary(1).Value</strong>
-                        </div>
-                    </div>
 
-                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
-                    {
-                        <div class="wallet-subtitle">@Model.Subtitle</div>
-                    }
-                    break;
-                default:
-                    <div class="wallet-hero">
-                        <div class="pass-preview-title">@(string.IsNullOrWhiteSpace(Model.Title) ? "Pass title" : Model.Title)</div>
-                        @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+                        @if (!string.IsNullOrWhiteSpace(Model.LogoAsset.PreviewUrl))
                         {
-                            <div class="pass-preview-subtitle">@Model.Subtitle</div>
+                            <img class="pass-preview-logo" src="@Model.LogoAsset.PreviewUrl" alt="Logo preview" />
+                        }
+                        else
+                        {
+                            <div class="pass-preview-badge">@GetBadgeText()</div>
                         }
                     </div>
-                    break;
-            }
+                </div>
 
-            <div class="wallet-field-grid @GetFieldGridCssClass()">
-                @foreach (var field in GetVisibleFields())
+                <div class="pass-back-sheet">
+                    @foreach (var field in GetBackFields())
+                    {
+                        <div class="pass-back-row @GetBackFieldCssClass(field.Type)">
+                            <div class="pass-back-label">@field.Label</div>
+                            @if (field.Type == BackFieldType.Link)
+                            {
+                                <div class="pass-back-value pass-back-link">@field.Value</div>
+                            }
+                            else
+                            {
+                                <div class="pass-back-value">@field.Value</div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="pass-preview-content">
+                <div class="pass-preview-header">
+                    <div class="pass-preview-brand">
+                        <div class="pass-preview-org">@(string.IsNullOrWhiteSpace(Model.OrganizationName) ? "Organization" : Model.OrganizationName)</div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.LogoAsset.PreviewUrl))
+                    {
+                        <img class="pass-preview-logo" src="@Model.LogoAsset.PreviewUrl" alt="Logo preview" />
+                    }
+                    else
+                    {
+                        <div class="pass-preview-badge">@GetBadgeText()</div>
+                    }
+                </div>
+
+                @switch (Model.PassType)
                 {
-                    <div class="pass-preview-field @GetFieldCssClass(field.Index)">
-                        <span>@field.Label.ToUpperInvariant()</span>
-                        <strong>@field.Value</strong>
+                    case DesignerPassType.Boarding:
+                        <div class="wallet-hero boarding-hero">
+                            <div class="boarding-endpoint">
+                                <span>@GetBoardingPrimary(0).Label</span>
+                                <strong>@GetBoardingPrimary(0).Value</strong>
+                            </div>
+                            <div class="boarding-transit">✈</div>
+                            <div class="boarding-endpoint align-right">
+                                <span>@GetBoardingPrimary(1).Label</span>
+                                <strong>@GetBoardingPrimary(1).Value</strong>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+                        {
+                            <div class="wallet-subtitle">@Model.Subtitle</div>
+                        }
+                        break;
+                    default:
+                        <div class="wallet-hero">
+                            <div class="pass-preview-title">@(string.IsNullOrWhiteSpace(Model.Title) ? "Pass title" : Model.Title)</div>
+                            @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+                            {
+                                <div class="pass-preview-subtitle">@Model.Subtitle</div>
+                            }
+                        </div>
+                        break;
+                }
+
+                <div class="wallet-field-grid @GetFieldGridCssClass()">
+                    @foreach (var field in GetVisibleFields())
+                    {
+                        <div class="pass-preview-field @GetFieldCssClass(field.Index)">
+                            <span>@field.Label.ToUpperInvariant()</span>
+                            <strong>@field.Value</strong>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.BarcodeStyle != DesignerBarcodeStyle.None)
+                {
+                    <div class="pass-preview-barcode">
+                        @if (!string.IsNullOrWhiteSpace(GetBarcodePreviewUrl()))
+                        {
+                            <img class="barcode-image @GetBarcodeCssClass()" src="@GetBarcodePreviewUrl()" alt="@($"{Model.BarcodeStyle} preview")" />
+                        }
+                        <div class="barcode-caption">@GetBarcodeCaption()</div>
                     </div>
                 }
             </div>
-
-            @if (Model.BarcodeStyle != DesignerBarcodeStyle.None)
-            {
-                <div class="pass-preview-barcode">
-                    @if (!string.IsNullOrWhiteSpace(GetBarcodePreviewUrl()))
-                    {
-                        <img class="barcode-image @GetBarcodeCssClass()" src="@GetBarcodePreviewUrl()" alt="@($"{Model.BarcodeStyle} preview")" />
-                    }
-                    <div class="barcode-caption">@GetBarcodeCaption()</div>
-                </div>
-            }
-        </div>
+        }
     </div>
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public required PassDesignerModel Model { get; set; }
+
+    [Parameter]
+    public bool ShowBack { get; set; }
 
     private IReadOnlyList<PreviewField> GetVisibleFields()
     {
@@ -174,6 +242,33 @@
     private string GetFieldCssClass(int index)
         => Model.PassType == DesignerPassType.Coupon && index == 0 ? "field-wide" : string.Empty;
 
+    private IReadOnlyList<BackPreviewField> GetBackFields()
+    {
+        var fields = Model.BackFields
+            .Where(static f => !string.IsNullOrWhiteSpace(f.Label) && !string.IsNullOrWhiteSpace(f.Value))
+            .Select(static field => new BackPreviewField(field.Label, field.Value, field.Type))
+            .ToList();
+
+        if (fields.Count != 0)
+        {
+            return fields;
+        }
+
+        return
+        [
+            new BackPreviewField("Website", "https://example.com/pass", BackFieldType.Link),
+            new BackPreviewField("Support", "support@example.com", BackFieldType.PlainText)
+        ];
+    }
+
+    private static string GetBackFieldCssClass(BackFieldType type)
+        => type switch
+        {
+            BackFieldType.Link => "back-row-link",
+            BackFieldType.MultilineText => "back-row-multiline",
+            _ => "back-row-plain"
+        };
+
     private static (int r, int g, int b) ParseHexColor(string value)
     {
         var hex = value.TrimStart('#');
@@ -194,4 +289,6 @@
     }
 
     private sealed record PreviewField(int Index, string Label, string Value);
+
+    private sealed record BackPreviewField(string Label, string Value, BackFieldType Type);
 }
