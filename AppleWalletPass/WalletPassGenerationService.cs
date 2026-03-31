@@ -1,21 +1,21 @@
+#pragma warning disable CS1591
 using System.Security.Cryptography.X509Certificates;
-using AppleWalletPass.Designer.Configuration;
-using AppleWalletPass.Designer.Models;
 using AppleWalletPass.Models;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace AppleWalletPass.Designer.Services;
+namespace AppleWalletPass;
 
 public sealed class WalletPassGenerationService(
     WalletSigningSettingsStore settingsStore,
     DesignerAssetStore assetStore,
     IOptions<WalletDesignerOptions> options,
-    IWebHostEnvironment environment)
+    IHostEnvironment environment) : IWalletPassGenerationService
 {
     private readonly WalletSigningSettingsStore _settingsStore = settingsStore;
     private readonly DesignerAssetStore _assetStore = assetStore;
     private readonly WalletDesignerOptions _options = options.Value;
-    private readonly IWebHostEnvironment _environment = environment;
+    private readonly IHostEnvironment _environment = environment;
     private readonly PassSigner _signer = new();
     private readonly PassPackager _packager = new();
 
@@ -178,3 +178,4 @@ public sealed class WalletPassGenerationService(
         return new X509Certificate2(bytes);
     }
 }
+#pragma warning restore CS1591

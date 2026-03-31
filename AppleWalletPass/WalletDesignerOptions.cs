@@ -1,4 +1,5 @@
-namespace AppleWalletPass.Designer.Configuration;
+#pragma warning disable CS1591
+namespace AppleWalletPass;
 
 public sealed class WalletDesignerOptions
 {
@@ -10,3 +11,4 @@ public sealed class WalletDesignerOptions
 
     public string WwdrCertificatePath { get; set; } = "App_Data/certs/wwdr.pem";
 }
+#pragma warning restore CS1591

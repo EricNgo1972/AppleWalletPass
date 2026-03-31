@@ -1,4 +1,5 @@
-﻿@implements IDisposable
+﻿@using System.Reflection
+@implements IDisposable
 @inject ThemeState ThemeState
 
 <div class="app-shell @(ThemeState.IsDarkMode ? "theme-dark" : "theme-light")">
@@ -7,7 +8,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<Router AppAssembly="typeof(Program).Assembly">
+<Router AppAssembly="typeof(SPC.UI.Blazor.CRM.Components.Pages.Designer).Assembly" AdditionalAssemblies="_shellAssemblies">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
@@ -24,6 +25,11 @@
 </div>
 
 @code {
+    private static readonly IReadOnlyList<Assembly> _shellAssemblies =
+    [
+        typeof(Program).Assembly
+    ];
+
     protected override void OnInitialized()
     {
         ThemeState.Changed += OnThemeChanged;

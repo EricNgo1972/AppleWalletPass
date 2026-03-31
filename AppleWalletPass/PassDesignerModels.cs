@@ -1,6 +1,7 @@
+#pragma warning disable CS1591
 using System.ComponentModel.DataAnnotations;
 
-namespace AppleWalletPass.Designer.Models;
+namespace AppleWalletPass;
 
 public enum DesignerPassType
 {
@@ -17,13 +18,6 @@ public enum DesignerBarcodeStyle
     Pdf417,
     Aztec,
     Code128
-}
-
-public enum DesignerAssetSlot
-{
-    Icon,
-    Logo,
-    Background
 }
 
 public enum BackFieldType
@@ -177,31 +171,8 @@ public sealed class WalletSigningSettingsResolved
     public DateTimeOffset UpdatedAtUtc { get; init; }
 }
 
-public sealed class AssetUploadResponse
-{
-    public required string Token { get; init; }
-
-    public required string FileName { get; init; }
-
-    public required string PreviewUrl { get; init; }
-
-    public required string ContentType { get; init; }
-}
-
-public sealed class AssetFileRecord
-{
-    public required string Token { get; init; }
-
-    public required string FilePath { get; init; }
-
-    public required string FileName { get; init; }
-
-    public required string ContentType { get; init; }
-
-    public required DesignerAssetSlot Slot { get; init; }
-}
-
 public sealed class GeneratePassRequest
 {
     public required PassDesignerModel Design { get; init; }
 }
+#pragma warning restore CS1591

@@ -1,13 +1,13 @@
+#pragma warning disable CS1591
 using System.Text.Json;
-using AppleWalletPass.Designer.Configuration;
-using AppleWalletPass.Designer.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
 
-namespace AppleWalletPass.Designer.Services;
+namespace AppleWalletPass;
 
-public sealed class DesignerAssetStore(IWebHostEnvironment environment, IOptions<WalletDesignerOptions> options)
+public sealed class DesignerAssetStore(IHostEnvironment environment, IOptions<WalletDesignerOptions> options) : IDesignerAssetStore
 {
-    private readonly IWebHostEnvironment _environment = environment;
+    private readonly IHostEnvironment _environment = environment;
     private readonly WalletDesignerOptions _options = options.Value;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -77,3 +77,4 @@ public sealed class DesignerAssetStore(IWebHostEnvironment environment, IOptions
     private string GetMetadataPath(string token)
         => Path.Combine(GetAssetRoot(), $"{token}.json");
 }
+#pragma warning restore CS1591

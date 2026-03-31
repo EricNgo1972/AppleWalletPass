@@ -1,12 +1,12 @@
-using AppleWalletPass.Designer.Models;
-using AppleWalletPass.Designer.Services;
+using AppleWalletPass;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AppleWalletPass.Designer.Controllers;
+namespace SPC.UI.Blazor.CRM.Controllers;
 
 [ApiController]
 [Route("api/assets")]
-public sealed class DesignerAssetsController(DesignerAssetStore assetStore) : ControllerBase
+public sealed class DesignerAssetsController(IDesignerAssetStore assetStore) : ControllerBase
 {
     private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
     {

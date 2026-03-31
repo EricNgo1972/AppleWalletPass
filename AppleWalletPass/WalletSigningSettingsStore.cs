@@ -1,19 +1,19 @@
+#pragma warning disable CS1591
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using AppleWalletPass.Designer.Configuration;
-using AppleWalletPass.Designer.Models;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace AppleWalletPass.Designer.Services;
+namespace AppleWalletPass;
 
 public sealed class WalletSigningSettingsStore(
-    IWebHostEnvironment environment,
+    IHostEnvironment environment,
     IOptions<WalletDesignerOptions> options,
-    IDataProtectionProvider dataProtectionProvider)
+    IDataProtectionProvider dataProtectionProvider) : IWalletSigningSettingsStore
 {
-    private readonly IWebHostEnvironment _environment = environment;
+    private readonly IHostEnvironment _environment = environment;
     private readonly WalletDesignerOptions _options = options.Value;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -109,3 +109,4 @@ public sealed class WalletSigningSettingsStore(
     private string GetSettingsPath()
         => Path.GetFullPath(Path.Combine(_environment.ContentRootPath, _options.SettingsStoragePath));
 }
+#pragma warning restore CS1591

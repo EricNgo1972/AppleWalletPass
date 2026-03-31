@@ -8,11 +8,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AppleWalletPass\AppleWalletPass.csproj" />
+    <ProjectReference Include="..\SPC.UI.Blazor.CRM\SPC.UI.Blazor.CRM.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="7.15.0" />
-    <PackageReference Include="ZXing.Net" Version="0.16.10" />
   </ItemGroup>
 
 </Project>

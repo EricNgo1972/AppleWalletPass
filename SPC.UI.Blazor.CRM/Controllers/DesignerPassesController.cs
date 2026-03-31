@@ -1,13 +1,12 @@
-using AppleWalletPass.Designer.Models;
-using AppleWalletPass.Designer.Services;
+using AppleWalletPass;
 using Microsoft.AspNetCore.Mvc;
 using WalletPassLib = AppleWalletPass;
 
-namespace AppleWalletPass.Designer.Controllers;
+namespace SPC.UI.Blazor.CRM.Controllers;
 
 [ApiController]
 [Route("api/passes")]
-public sealed class DesignerPassesController(WalletPassGenerationService generationService) : ControllerBase
+public sealed class DesignerPassesController(IWalletPassGenerationService generationService) : ControllerBase
 {
     [HttpPost("download")]
     public async Task<IActionResult> DownloadAsync([FromBody] GeneratePassRequest request, CancellationToken cancellationToken)

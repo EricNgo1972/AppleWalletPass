@@ -1,15 +1,15 @@
+using AppleWalletPass;
+using SPC.UI.Blazor.CRM;
+using SPC.UI.Blazor.CRM.Services;
 using AppleWalletPass.Designer.Components;
-using AppleWalletPass.Designer.Configuration;
-using AppleWalletPass.Designer.Controllers;
 using AppleWalletPass.Designer.Services;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<WalletDesignerOptions>(builder.Configuration.GetSection(WalletDesignerOptions.SectionName));
 builder.Services.AddDataProtection();
 builder.Services.AddMudServices();
-builder.Services.AddControllers().AddApplicationPart(typeof(DesignerAssetsController).Assembly);
+builder.Services.AddControllers().AddCrmUiControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped(sp =>
 {
@@ -17,10 +17,8 @@ builder.Services.AddScoped(sp =>
     return new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
 });
 builder.Services.AddSingleton<ThemeState>();
-builder.Services.AddSingleton<BarcodePreviewRenderer>();
-builder.Services.AddSingleton<DesignerAssetStore>();
-builder.Services.AddSingleton<WalletSigningSettingsStore>();
-builder.Services.AddScoped<WalletPassGenerationService>();
+builder.Services.AddCrmUiServices();
+builder.Services.AddAppleWalletPassDesignerCore(builder.Configuration);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -41,6 +39,7 @@ app.UseAntiforgery();
 app.MapControllers();
 
 app.MapRazorComponents<App>()
+    .AddAdditionalAssemblies(typeof(SPC.UI.Blazor.CRM.Components.Pages.Designer).Assembly)
     .AddInteractiveServerRenderMode();
 
 app.Run();
