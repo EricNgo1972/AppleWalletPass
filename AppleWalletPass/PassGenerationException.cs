@@ -1,4 +1,4 @@
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 /// <summary>
 /// Represents wallet pass generation failure categories.

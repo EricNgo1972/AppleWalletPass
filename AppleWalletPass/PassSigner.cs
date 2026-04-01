@@ -4,7 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 /// <summary>
 /// Creates the Wallet manifest and detached PKCS#7 signature.

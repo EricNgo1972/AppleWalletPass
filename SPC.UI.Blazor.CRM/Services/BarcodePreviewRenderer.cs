@@ -1,10 +1,10 @@
-using AppleWalletPass;
+using SPC.Infrastructure.AppleWalletPass;
 using ZXing;
 using ZXing.Common;
 using ZXing.QrCode;
 using ZXing.Rendering;
 
-namespace SPC.UI.Blazor.CRM.Services;
+namespace SPC.UI.Blazor.AppleWalletPass.Services;
 
 public sealed class BarcodePreviewRenderer
 {

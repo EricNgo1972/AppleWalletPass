@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 public sealed class DesignerAssetStore
 {

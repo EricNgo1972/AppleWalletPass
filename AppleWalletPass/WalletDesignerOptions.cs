@@ -1,5 +1,5 @@
 #pragma warning disable CS1591
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 public sealed class WalletDesignerOptions
 {

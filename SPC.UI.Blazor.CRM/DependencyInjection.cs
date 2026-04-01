@@ -1,9 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
-using SPC.UI.Blazor.CRM.Controllers;
-using SPC.UI.Blazor.CRM.Services;
+using SPC.UI.Blazor.AppleWalletPass.Controllers;
+using SPC.UI.Blazor.AppleWalletPass.Services;
 
-namespace SPC.UI.Blazor.CRM;
+namespace SPC.UI.Blazor.AppleWalletPass;
 
 /// <summary>
 /// Service registration helpers for CRM UI and controller features.

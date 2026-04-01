@@ -1,5 +1,6 @@
 using System.Text.Json;
-using AppleWalletPass.Models;
+using SPC.Infrastructure.AppleWalletPass;
+using SPC.Infrastructure.AppleWalletPass.Models;
 
 namespace AppleWalletPass.Tests;
 

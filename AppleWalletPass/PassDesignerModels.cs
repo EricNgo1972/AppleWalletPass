@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 using System.ComponentModel.DataAnnotations;
 
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 public enum DesignerPassType
 {

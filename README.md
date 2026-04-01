@@ -51,7 +51,7 @@ Blazor Server host shell that owns:
 - layout and theme state
 - host configuration and app settings
 
-### `SPC.UI.Blazor.CRM`
+### `SPC.UI.Blazor.AppleWalletPass`
 
 Razor Class Library that owns:
 

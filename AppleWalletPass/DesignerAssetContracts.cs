@@ -1,4 +1,4 @@
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 /// <summary>
 /// Identifies a Wallet pass asset slot used by the designer and packaging flow.

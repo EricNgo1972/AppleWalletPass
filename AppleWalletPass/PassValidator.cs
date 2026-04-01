@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using AppleWalletPass.Models;
+using SPC.Infrastructure.AppleWalletPass.Models;
 
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 /// <summary>
 /// Validates pass data before serialization and packaging.

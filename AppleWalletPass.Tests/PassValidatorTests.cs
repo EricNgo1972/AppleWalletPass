@@ -1,3 +1,6 @@
+using SPC.Infrastructure.AppleWalletPass;
+using SPC.Infrastructure.AppleWalletPass.Models;
+
 namespace AppleWalletPass.Tests;
 
 public class PassValidatorTests
@@ -5,9 +8,9 @@ public class PassValidatorTests
     [Fact]
     public void Validate_ThrowsForMissingRequiredFields()
     {
-        var pass = new AppleWalletPass.Models.Pass
+        var pass = new Pass
         {
-            Kind = AppleWalletPass.Models.PassKind.Generic,
+            Kind = PassKind.Generic,
             SerialNumber = "SER-001"
         };
 

@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppleWalletPass\AppleWalletPass.csproj" />
-    <ProjectReference Include="..\SPC.UI.Blazor.CRM\SPC.UI.Blazor.CRM.csproj" />
+    <ProjectReference Include="..\AppleWalletPass\SPC.Infrastructure.AppleWalletPass.csproj" />
+    <ProjectReference Include="..\SPC.UI.Blazor.CRM\SPC.UI.Blazor.AppleWalletPass.csproj" />
   </ItemGroup>
 
   <ItemGroup>

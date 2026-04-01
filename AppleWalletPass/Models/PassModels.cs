@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace AppleWalletPass.Models;
+namespace SPC.Infrastructure.AppleWalletPass.Models;
 
 /// <summary>
 /// Represents a Wallet pass type.

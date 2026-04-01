@@ -1,9 +1,9 @@
 #pragma warning disable CS1591
-using AppleWalletPass.Models;
+using SPC.Infrastructure.AppleWalletPass.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 public sealed class WalletPassGenerationService
 {

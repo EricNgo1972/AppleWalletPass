@@ -1,6 +1,6 @@
-using AppleWalletPass;
+using SPC.Infrastructure.AppleWalletPass;
 
-namespace SPC.UI.Blazor.CRM.Models;
+namespace SPC.UI.Blazor.AppleWalletPass.Models;
 
 public sealed class GeneratePassRequest
 {

@@ -1,7 +1,7 @@
 using System.Security.Cryptography.X509Certificates;
-using AppleWalletPass.Models;
+using SPC.Infrastructure.AppleWalletPass.Models;
 
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 /// <summary>
 /// Coordinates pass validation, signing, and packaging.

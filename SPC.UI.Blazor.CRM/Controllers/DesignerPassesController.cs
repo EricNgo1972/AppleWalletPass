@@ -1,9 +1,9 @@
-using AppleWalletPass;
+using SPC.Infrastructure.AppleWalletPass;
 using Microsoft.AspNetCore.Mvc;
-using SPC.UI.Blazor.CRM.Models;
-using WalletPassLib = AppleWalletPass;
+using SPC.UI.Blazor.AppleWalletPass.Models;
+using WalletPassLib = SPC.Infrastructure.AppleWalletPass;
 
-namespace SPC.UI.Blazor.CRM.Controllers;
+namespace SPC.UI.Blazor.AppleWalletPass.Controllers;
 
 [ApiController]
 [Route("api/passes")]

@@ -1,6 +1,6 @@
-using AppleWalletPass;
-using SPC.UI.Blazor.CRM;
-using SPC.UI.Blazor.CRM.Services;
+using SPC.Infrastructure.AppleWalletPass;
+using SPC.UI.Blazor.AppleWalletPass;
+using SPC.UI.Blazor.AppleWalletPass.Services;
 using AppleWalletPass.Designer.Components;
 using AppleWalletPass.Designer.Services;
 using MudBlazor.Services;
@@ -39,7 +39,7 @@ app.UseAntiforgery();
 app.MapControllers();
 
 app.MapRazorComponents<App>()
-    .AddAdditionalAssemblies(typeof(SPC.UI.Blazor.CRM.Components.Pages.Designer).Assembly)
+    .AddAdditionalAssemblies(typeof(SPC.UI.Blazor.AppleWalletPass.Components.Pages.Designer).Assembly)
     .AddInteractiveServerRenderMode();
 
 app.Run();

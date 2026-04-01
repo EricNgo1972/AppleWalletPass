@@ -1,7 +1,7 @@
 using System.IO.Compression;
-using AppleWalletPass.Models;
+using SPC.Infrastructure.AppleWalletPass.Models;
 
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 /// <summary>
 /// Packages Wallet pass bundle files into a .pkpass archive.

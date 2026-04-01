@@ -52,7 +52,7 @@ Use this project as the app host. It owns:
 - theme state
 - host configuration
 
-### `SPC.UI.Blazor.CRM`
+### `SPC.UI.Blazor.AppleWalletPass`
 
 Use this project for the designer experience. It owns:
 

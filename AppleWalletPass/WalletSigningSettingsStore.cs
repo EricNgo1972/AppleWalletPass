@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace AppleWalletPass;
+namespace SPC.Infrastructure.AppleWalletPass;
 
 public sealed class WalletSigningSettingsStore
 {

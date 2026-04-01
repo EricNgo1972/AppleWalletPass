@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SPC.UI.Blazor.AppleWalletPass</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,7 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <ProjectReference Include="..\AppleWalletPass\AppleWalletPass.csproj" />
+    <ProjectReference Include="..\AppleWalletPass\SPC.Infrastructure.AppleWalletPass.csproj" />
   </ItemGroup>
 
 </Project>

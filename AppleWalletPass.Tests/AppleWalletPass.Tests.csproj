@@ -20,6 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppleWalletPass\AppleWalletPass.csproj" />
+    <ProjectReference Include="..\AppleWalletPass\SPC.Infrastructure.AppleWalletPass.csproj" />
   </ItemGroup>
 </Project>
