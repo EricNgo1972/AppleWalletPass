@@ -7,7 +7,7 @@ namespace AppleWalletPass;
 /// <summary>
 /// Validates pass data before serialization and packaging.
 /// </summary>
-public static partial class PassValidator
+internal static partial class PassValidator
 {
     /// <summary>
     /// Validates core pass metadata.

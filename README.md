@@ -1,60 +1,77 @@
 # AppleWalletPass
 
-`AppleWalletPass` is a `.NET 8` class library for generating signed Apple Wallet `.pkpass` files using only platform libraries plus `System.Security.Cryptography.Pkcs`.
-
-## What It Includes
-
-- Fluent `PassBuilder` API for all Wallet pass styles
-- Strongly typed pass models and Apple-specific enums
-- SHA-1 `manifest.json` generation
-- Detached PKCS#7 signing
-- ZIP packaging for `.pkpass` output
-- Validation with descriptive error codes
-- Async file IO for certificates and image assets
-- xUnit test coverage and integration test outline
+`AppleWalletPass` is a `.NET 8` solution for generating signed Apple Wallet `.pkpass` files and hosting a Blazor Server pass designer.
 
 ## Solution Layout
 
 ```text
 AppleWalletPass.sln
-AppleWalletPass/
-  Models/PassModels.cs
-  PassBuilder.cs
-  PassGenerationException.cs
-  PassGenerator.cs
-  PassPackager.cs
-  PassSigner.cs
-  PassValidator.cs
-AppleWalletPass.Tests/
+AppleWalletPass/            Core Wallet pass library
+AppleWalletPass.Designer/   Blazor Server host shell
+SPC.UI.Blazor.CRM/          Razor Class Library for designer UI
+AppleWalletPass.Tests/      xUnit tests
 README.md
 userguide.md
 ```
 
-## Requirements
+## Projects
+
+### `AppleWalletPass`
+
+Non-UI core library for:
+
+- building `pass.json` with `PassBuilder`
+- validating pass content before generation
+- loading certificates and images
+- creating `manifest.json`
+- signing with detached PKCS#7 / CMS
+- packaging `.pkpass` archives
+
+The public API is intentionally narrow. External callers should normally use:
+
+- `PassBuilder`
+- `PassGenerator`
+- types in `AppleWalletPass.Models`
+- `PassGenerationException`
+
+The library also exposes only the minimum service contracts currently used by the designer app:
+
+- `IDesignerAssetStore`
+- `IWalletSigningSettingsStore`
+- `IWalletPassGenerationService`
+
+Low-level implementation types such as signing, packaging, validation, and storage implementations are internal.
+
+### `AppleWalletPass.Designer`
+
+Blazor Server host shell that owns:
+
+- app startup and dependency injection composition
+- root app component and routing shell
+- layout and theme state
+- host configuration and app settings
+
+### `SPC.UI.Blazor.CRM`
+
+Razor Class Library that owns:
+
+- pass designer pages and reusable Razor components
+- CRM-facing controllers
+- preview rendering helpers
+- CRM UI static assets
+
+## Core Library Quick Start
+
+### Requirements
 
 - .NET SDK 8.0+
-- Apple Wallet pass certificate exported as `.p12` or `.pfx`
-- Apple WWDR intermediate certificate as `.pem` or `.cer`
-- Required pass icons:
+- Apple Wallet pass certificate as `.p12` or `.pfx`
+- Apple Wallet WWDR intermediate certificate as `.pem` or `.cer`
+- required pass icon assets:
   - `icon.png`
   - `icon@2x.png`
 
-## Quick Start
-
-### 1. Prepare assets
-
-```text
-certs/
-  pass.p12
-  wwdr.pem
-assets/
-  icon.png
-  icon@2x.png
-  logo.png
-  logo@2x.png
-```
-
-### 2. Build a pass
+### Build a pass
 
 ```csharp
 using AppleWalletPass;
@@ -76,7 +93,7 @@ var pass = new PassBuilder()
     .Build();
 ```
 
-### 3. Generate `.pkpass`
+### Generate `.pkpass`
 
 ```csharp
 var generator = new PassGenerator(new PassGeneratorOptions
@@ -99,33 +116,36 @@ await File.WriteAllBytesAsync("boarding.pkpass", pkpass);
 - `AsStoreCard()`
 - `AsGeneric()`
 
-## ASP.NET Core Example
+## Blazor Designer App
 
-```csharp
-app.MapPost("/passes/generate", async (PassRequest req, PassGenerator gen) =>
-{
-    var pkpass = await gen.GenerateAsync(req.ToPass());
-    return Results.File(
-        pkpass,
-        contentType: "application/vnd.apple.pkpass",
-        fileDownloadName: $"{req.Serial}.pkpass");
-});
-```
+The solution also includes a Blazor Server designer with:
 
-## Validation Rules
+- live front/back pass editing
+- Wallet-style preview
+- light/dark app theme switching
+- image upload for Wallet assets
+- server-side `.pkpass` generation and download
 
-- `passTypeIdentifier` is required
-- `teamIdentifier` is required
-- `serialNumber` is required
-- `organizationName` is required
-- `description` is required
-- serial number length must be `<= 255`
-- colors must be valid CSS `rgb(r, g, b)` strings after normalization
-- `icon.png` must be present before generation
+Main routes:
 
-## Error Handling
+- `/`
+- `/passes/designer`
+- `/passes/settings`
 
-The library throws `PassGenerationException` with these error codes:
+## Validation And Errors
+
+The generation path validates:
+
+- `passTypeIdentifier`
+- `teamIdentifier`
+- `serialNumber`
+- `organizationName`
+- `description`
+- serial number length `<= 255`
+- valid normalized color values
+- presence of required icon assets
+
+Generation failures use `PassGenerationException` with:
 
 - `CertificateNotFound`
 - `CertificateExpired`
@@ -136,10 +156,10 @@ The library throws `PassGenerationException` with these error codes:
 ## Build And Test
 
 ```bash
-'/mnt/c/Program Files/dotnet/dotnet.exe' build AppleWalletPass.sln
-'/mnt/c/Program Files/dotnet/dotnet.exe' test AppleWalletPass.Tests/AppleWalletPass.Tests.csproj
+'/mnt/c/Program Files/dotnet/dotnet.exe' build AppleWalletPass.sln -p:UseAppHost=false
+'/mnt/c/Program Files/dotnet/dotnet.exe' test AppleWalletPass.Tests/AppleWalletPass.Tests.csproj --no-build
 ```
 
 ## Additional Documentation
 
-See [userguide.md](/mnt/c/SPC/spc-walletpass/userguide.md) for the full API guide, usage patterns, validation behavior, and implementation notes.
+See [userguide.md](/mnt/c/SPC/spc-walletpass/userguide.md) for the API guide, architecture notes, and Blazor designer details.

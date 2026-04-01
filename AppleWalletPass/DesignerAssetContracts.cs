@@ -50,7 +50,7 @@ public sealed class AssetUploadResponse
 /// <summary>
 /// Represents a stored asset record resolved from server-managed storage.
 /// </summary>
-public sealed class AssetFileRecord
+internal sealed class AssetFileRecord
 {
     /// <summary>
     /// Gets the opaque server-side token for the stored asset.
@@ -76,25 +76,4 @@ public sealed class AssetFileRecord
     /// Gets the Wallet asset slot represented by this record.
     /// </summary>
     public required DesignerAssetSlot Slot { get; init; }
-}
-
-/// <summary>
-/// Defines server-managed storage operations for uploaded designer assets.
-/// </summary>
-public interface IDesignerAssetStore
-{
-    /// <summary>
-    /// Saves an uploaded asset and returns metadata required by the UI.
-    /// </summary>
-    Task<AssetUploadResponse> SaveAsync(
-        DesignerAssetSlot slot,
-        Stream content,
-        string fileName,
-        string contentType,
-        CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Resolves a stored asset by its opaque token.
-    /// </summary>
-    Task<AssetFileRecord?> GetAsync(string token, CancellationToken cancellationToken);
 }

@@ -8,18 +8,25 @@ using Microsoft.Extensions.Options;
 
 namespace AppleWalletPass;
 
-public sealed class WalletSigningSettingsStore(
-    IHostEnvironment environment,
-    IOptions<WalletDesignerOptions> options,
-    IDataProtectionProvider dataProtectionProvider) : IWalletSigningSettingsStore
+public sealed class WalletSigningSettingsStore
 {
-    private readonly IHostEnvironment _environment = environment;
-    private readonly WalletDesignerOptions _options = options.Value;
+    private readonly IHostEnvironment _environment;
+    private readonly WalletDesignerOptions _options;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
-    private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector("AppleWalletPass.Designer.WalletSigningSettings.v1");
+    private readonly IDataProtector _protector;
+
+    public WalletSigningSettingsStore(
+        IHostEnvironment environment,
+        IOptions<WalletDesignerOptions> options,
+        IDataProtectionProvider dataProtectionProvider)
+    {
+        _environment = environment;
+        _options = options.Value;
+        _protector = dataProtectionProvider.CreateProtector("AppleWalletPass.Designer.WalletSigningSettings.v1");
+    }
 
     public async Task<WalletSigningSettingsViewModel> GetAsync(CancellationToken cancellationToken)
     {
@@ -71,7 +78,7 @@ public sealed class WalletSigningSettingsStore(
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(record, _jsonOptions), cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<WalletSigningSettingsResolved> GetResolvedAsync(CancellationToken cancellationToken)
+    internal async Task<WalletSigningSettingsResolved> GetResolvedAsync(CancellationToken cancellationToken)
     {
         var record = await ReadRecordAsync(cancellationToken).ConfigureAwait(false);
         if (record is null ||

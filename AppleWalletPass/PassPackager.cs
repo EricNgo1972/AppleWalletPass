@@ -6,7 +6,7 @@ namespace AppleWalletPass;
 /// <summary>
 /// Packages Wallet pass bundle files into a .pkpass archive.
 /// </summary>
-public class PassPackager
+internal class PassPackager
 {
     private static readonly string[] RequiredEntries =
     [

@@ -281,7 +281,7 @@ public sealed record PassImagePaths
 /// <summary>
 /// Represents a set of pass fields.
 /// </summary>
-public sealed class PassFieldSet
+internal sealed class PassFieldSet
 {
     /// <summary>
     /// Gets the header fields.

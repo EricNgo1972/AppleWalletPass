@@ -2,22 +2,70 @@
 
 ## Overview
 
-`AppleWalletPass` builds Apple Wallet payloads, signs them with your pass certificate, and packages them into `.pkpass` ZIP archives.
+This solution has three distinct layers:
 
-The generation flow is:
+- [AppleWalletPass](/mnt/c/SPC/spc-walletpass/AppleWalletPass): non-UI Wallet pass library
+- [AppleWalletPass.Designer](/mnt/c/SPC/spc-walletpass/AppleWalletPass.Designer): Blazor Server host shell
+- [SPC.UI.Blazor.CRM](/mnt/c/SPC/spc-walletpass/SPC.UI.Blazor.CRM): Razor Class Library for the designer UI
 
-1. Build a `Pass` object with `PassBuilder`
-2. Validate required fields and image configuration
-3. Serialize `pass.json`
-4. Hash bundle files into `manifest.json`
-5. Create a detached PKCS#7 `signature`
-6. Package everything into a `.pkpass`
+The core library builds Apple Wallet payloads, signs them with Apple-issued certificates, and packages them into `.pkpass` files. The Blazor app uses that library to provide a browser-based pass designer.
 
-## Core Types
+## Architecture
 
-### `PassBuilder`
+### `AppleWalletPass`
 
-Main fluent API for constructing pass data.
+Use this project when you need programmatic pass generation.
+
+Public reusable API:
+
+- `PassBuilder`
+- `PassGenerator`
+- `PassGenerationException`
+- `PassGenerationErrorCode`
+- domain types in [PassModels.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass/Models/PassModels.cs)
+
+Public designer-facing contracts kept for cross-project use:
+
+- [IDesignerAssetStore.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass/DesignerAssetContracts.cs)
+- [IWalletSigningSettingsStore.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass/IWalletSigningSettingsStore.cs)
+- [IWalletPassGenerationService.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass/IWalletPassGenerationService.cs)
+
+Internal implementation details:
+
+- signing implementation
+- ZIP packaging implementation
+- validation implementation
+- asset storage implementation
+- signing-settings persistence implementation
+- app-specific generation service implementation
+
+This keeps the core library usable without exposing every internal workflow class.
+
+### `AppleWalletPass.Designer`
+
+Use this project as the app host. It owns:
+
+- `Program.cs`
+- root `App.razor`
+- route shell
+- main layout and navigation
+- theme state
+- host configuration
+
+### `SPC.UI.Blazor.CRM`
+
+Use this project for the designer experience. It owns:
+
+- route pages
+- reusable designer components
+- preview components
+- CRM controllers
+- preview barcode rendering
+- CRM static web assets
+
+## Core Library Usage
+
+### Build a pass with `PassBuilder`
 
 Supported style selectors:
 
@@ -27,7 +75,7 @@ Supported style selectors:
 - `AsStoreCard()`
 - `AsGeneric()`
 
-Metadata methods:
+Common metadata methods:
 
 - `WithOrganization(string organizationName, string teamId, string passTypeId, string? description = null)`
 - `WithDescription(string description)`
@@ -41,7 +89,7 @@ Barcode methods:
 - `WithQRBarcode(string message, string? altText = null)`
 - `WithBarcode(BarcodeFormat format, string message, string? altText = null)`
 
-Image methods:
+Asset methods:
 
 - `WithIcon(string iconPath, string? icon2xPath = null)`
 - `WithLogo(string logoPath, string? logo2xPath = null)`
@@ -57,14 +105,14 @@ Field methods:
 
 Context methods:
 
-- `AddLocation(double latitude, double longitude, double? altitude = null, string? relevantText = null)`
-- `AddBeacon(Guid proximityUuid, ushort? major = null, ushort? minor = null, string? relevantText = null)`
+- `AddLocation(...)`
+- `AddBeacon(...)`
 
-Finalize:
+Finalize with:
 
 - `Build()`
 
-## Example: Boarding Pass
+### Example: Boarding pass
 
 ```csharp
 using AppleWalletPass;
@@ -87,107 +135,7 @@ var pass = new PassBuilder()
     .Build();
 ```
 
-## Example: Event Ticket
-
-```csharp
-var pass = new PassBuilder()
-    .AsEventTicket()
-    .WithOrganization("Acme Live", "ABC123XYZ", "pass.com.acme.event", "Concert ticket")
-    .WithSerial("EVT-2026-0001")
-    .WithIcon("./assets/icon.png", "./assets/icon@2x.png")
-    .AddPrimaryField("event", "EVENT", "Acme Live 2026")
-    .AddSecondaryField("venue", "VENUE", "Grand Hall")
-    .AddSecondaryField("seat", "SEAT", "B14")
-    .WithBarcode(BarcodeFormat.Aztec, "EVT-2026-0001")
-    .Build();
-```
-
-## Pass Models
-
-### `PassField`
-
-Represents one field inside the pass layout.
-
-Properties:
-
-- `key`
-- `label`
-- `value`
-- `textAlignment`
-- `dateStyle`
-- `numberStyle`
-
-### `Barcode`
-
-Represents barcode payload data.
-
-Formats:
-
-- `QR`
-- `PDF417`
-- `Aztec`
-- `Code128`
-
-### `PassColors`
-
-The builder normalizes `#RGB` and `#RRGGBB` input into CSS `rgb(r, g, b)` strings.
-
-### `Location`
-
-Represents a Wallet-relevant location trigger.
-
-### `BeaconInfo`
-
-Represents iBeacon metadata used for proximity-based display.
-
-## Signing
-
-`PassSigner` is responsible for:
-
-- hashing each bundle file with SHA-1
-- building `manifest.json`
-- creating a detached CMS / PKCS#7 signature
-
-Signature method:
-
-```csharp
-byte[] Sign(
-    Dictionary<string, byte[]> bundleFiles,
-    X509Certificate2 signerCert,
-    X509Certificate2 wwdrCert);
-```
-
-Notes:
-
-- `bundleFiles` should contain the unsigned payload files such as `pass.json`, icons, logos, and background
-- `manifest.json` is derived from those files
-- the CMS signature is detached and signs the manifest content
-- the signer certificate must include a private key
-
-## Packaging
-
-`PassPackager` writes the final bundle with `ZipArchive`.
-
-Expected entries:
-
-- `pass.json`
-- `manifest.json`
-- `signature`
-- `icon.png`
-- `icon@2x.png`
-- `logo.png` if provided
-- `logo@2x.png` if provided
-- `background.png` if provided
-
-Packaging method:
-
-```csharp
-byte[] Package(PassBundle bundle);
-```
-
-## Top-Level Generation
-
-`PassGenerator` loads certificates, reads assets, signs the manifest, and packages the pass.
+### Generate with `PassGenerator`
 
 ```csharp
 var generator = new PassGenerator(new PassGeneratorOptions
@@ -201,33 +149,43 @@ var generator = new PassGenerator(new PassGeneratorOptions
 byte[] pkpass = await generator.GenerateAsync(pass);
 ```
 
-If `OutputDirectory` is set, the generator also writes `{serialNumber}.pkpass` to disk.
+`PassGenerator` is the public top-level generation API. Lower-level classes such as signing, packaging, and validation are internal implementation details.
 
-## Validation
+## Domain Model Notes
 
-`PassValidator` enforces:
+Key types in [PassModels.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass/Models/PassModels.cs):
 
-- `passTypeIdentifier` is present
-- `teamIdentifier` is present
-- `serialNumber` is present
-- `organizationName` is present
-- `description` is present
-- serial number length does not exceed 255 characters
-- colors are valid CSS `rgb(...)` strings
-- `icon.png` is configured before generation
+- `Pass`
+- `PassStyle`
+- `BoardingPassStyle`
+- `PassField`
+- `Barcode`
+- `PassColors`
+- `Location`
+- `BeaconInfo`
+- `PassImagePaths`
+- `PassGeneratorOptions`
 
-Validation methods:
+Supported enums:
 
-```csharp
-PassValidator.Validate(pass);
-PassValidator.ValidateForGeneration(pass);
-```
+- `PassKind`
+- `PKTransitType`
+- `BarcodeFormat`
+- `PassTextAlignment`
+- `PassDateStyle`
+- `PassNumberStyle`
 
-## Exceptions
+## Validation And Errors
 
-All generation failures use `PassGenerationException`.
+The generation flow validates:
 
-Available `ErrorCode` values:
+- required Wallet identifiers
+- serial number presence and length
+- organization name and description
+- normalized color format
+- required icon assets
+
+The library throws [PassGenerationException.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass/PassGenerationException.cs) with:
 
 - `CertificateNotFound`
 - `CertificateExpired`
@@ -244,47 +202,72 @@ try
 }
 catch (PassGenerationException ex) when (ex.ErrorCode == PassGenerationErrorCode.InvalidPassData)
 {
-    // return validation error to caller
+    // return validation details to the caller
 }
 ```
 
-## ASP.NET Core Endpoint
+## Designer App
 
-```csharp
-app.MapPost("/passes/generate", async (PassRequest req, PassGenerator gen) =>
-{
-    var pkpass = await gen.GenerateAsync(req.ToPass());
-    return Results.File(
-        pkpass,
-        contentType: "application/vnd.apple.pkpass",
-        fileDownloadName: $"{req.Serial}.pkpass");
-});
-```
+The Blazor designer supports:
 
-Recommended response headers:
+- boarding, event, coupon, and store card presets
+- front-face and back-detail editing
+- Wallet-style preview
+- separate barcode payload and display caption
+- uploaded icon, logo, and background assets
+- direct `.pkpass` download
 
-- `Content-Type: application/vnd.apple.pkpass`
-- `Content-Disposition: attachment; filename="<serial>.pkpass"`
+### Routes
+
+- `/`
+- `/passes/designer`
+- `/passes/settings`
+
+### Theme Ownership
+
+The shell theme is maintained by [MainLayout.razor](/mnt/c/SPC/spc-walletpass/AppleWalletPass.Designer/Components/Layout/MainLayout.razor), [Routes.razor](/mnt/c/SPC/spc-walletpass/AppleWalletPass.Designer/Components/Routes.razor), and [ThemeState.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass.Designer/Services/ThemeState.cs) in the host project.
+
+The pass preview is designed to remain Wallet-like and not fully inherit the app theme.
+
+### Settings
+
+The signing settings workflow stores:
+
+- `.p12` certificate content
+- certificate password
+- `passTypeIdentifier`
+- `teamIdentifier`
+- optional default organization name
+
+The Apple Wallet WWDR intermediate is app-managed and not user-uploaded.
+
+## Dependency Injection
+
+The projects now register their own implementations:
+
+- [AppleWalletPass/DependencyInjection.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass/DependencyInjection.cs)
+- [SPC.UI.Blazor.CRM/DependencyInjection.cs](/mnt/c/SPC/spc-walletpass/SPC.UI.Blazor.CRM/DependencyInjection.cs)
+
+The host in [Program.cs](/mnt/c/SPC/spc-walletpass/AppleWalletPass.Designer/Program.cs) composes those registrations.
 
 ## Testing
 
-Included tests cover:
+Current tests cover:
 
-- builder JSON structure
+- pass builder JSON structure
 - validator required field handling
-- ZIP archive entry creation
-- full integration outline for real certificates
+- ZIP package entry creation
+- integration outline for sign + package flow
 
-Run tests with:
+Run:
 
 ```bash
-'/mnt/c/Program Files/dotnet/dotnet.exe' test AppleWalletPass.Tests/AppleWalletPass.Tests.csproj
+'/mnt/c/Program Files/dotnet/dotnet.exe' build AppleWalletPass.sln -p:UseAppHost=false
+'/mnt/c/Program Files/dotnet/dotnet.exe' test AppleWalletPass.Tests/AppleWalletPass.Tests.csproj --no-build
 ```
 
-## Operational Notes
+## Notes For Maintainers
 
-- Keep Apple certificates out of source control
-- Provide real `icon.png` and `icon@2x.png` assets for every generated pass
-- Use a stable serial number strategy on your side
-- Reuse `PassGenerator` through dependency injection in web apps
-- Enable the skipped integration test only in an environment with valid Apple-issued credentials
+- Keep UI-specific request models in the UI project unless they are true shared contracts.
+- Keep `AppleWalletPass` focused on reusable pass generation and only expose contracts the UI actually needs.
+- Prefer `PassBuilder` and `PassGenerator` as the supported integration path for external consumers.

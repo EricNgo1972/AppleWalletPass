@@ -20,11 +20,8 @@ public static class DependencyInjection
 
         services.Configure<WalletDesignerOptions>(configuration.GetSection(WalletDesignerOptions.SectionName));
         services.AddSingleton<DesignerAssetStore>();
-        services.AddSingleton<IDesignerAssetStore>(sp => sp.GetRequiredService<DesignerAssetStore>());
         services.AddSingleton<WalletSigningSettingsStore>();
-        services.AddSingleton<IWalletSigningSettingsStore>(sp => sp.GetRequiredService<WalletSigningSettingsStore>());
         services.AddScoped<WalletPassGenerationService>();
-        services.AddScoped<IWalletPassGenerationService>(sp => sp.GetRequiredService<WalletPassGenerationService>());
 
         return services;
     }

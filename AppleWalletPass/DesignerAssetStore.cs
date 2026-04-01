@@ -1,18 +1,24 @@
 #pragma warning disable CS1591
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace AppleWalletPass;
 
-public sealed class DesignerAssetStore(IHostEnvironment environment, IOptions<WalletDesignerOptions> options) : IDesignerAssetStore
+public sealed class DesignerAssetStore
 {
-    private readonly IHostEnvironment _environment = environment;
-    private readonly WalletDesignerOptions _options = options.Value;
+    private readonly IHostEnvironment _environment;
+    private readonly WalletDesignerOptions _options;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
+
+    public DesignerAssetStore(IHostEnvironment environment, IOptions<WalletDesignerOptions> options)
+    {
+        _environment = environment;
+        _options = options.Value;
+    }
 
     public async Task<AssetUploadResponse> SaveAsync(
         DesignerAssetSlot slot,
@@ -59,7 +65,19 @@ public sealed class DesignerAssetStore(IHostEnvironment environment, IOptions<Wa
         };
     }
 
-    public async Task<AssetFileRecord?> GetAsync(string token, CancellationToken cancellationToken)
+    public async Task<(byte[] Content, string ContentType)?> GetContentAsync(string token, CancellationToken cancellationToken)
+    {
+        var asset = await GetRecordAsync(token, cancellationToken).ConfigureAwait(false);
+        if (asset is null || !File.Exists(asset.FilePath))
+        {
+            return null;
+        }
+
+        var bytes = await File.ReadAllBytesAsync(asset.FilePath, cancellationToken).ConfigureAwait(false);
+        return (bytes, asset.ContentType);
+    }
+
+    internal async Task<AssetFileRecord?> GetRecordAsync(string token, CancellationToken cancellationToken)
     {
         var metadataPath = GetMetadataPath(token);
         if (!File.Exists(metadataPath))

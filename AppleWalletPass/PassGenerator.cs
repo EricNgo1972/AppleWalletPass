@@ -27,7 +27,7 @@ public class PassGenerator
     /// <param name="options">The generator options.</param>
     /// <param name="signer">The signer instance.</param>
     /// <param name="packager">The packager instance.</param>
-    public PassGenerator(PassGeneratorOptions options, PassSigner signer, PassPackager packager)
+    internal PassGenerator(PassGeneratorOptions options, PassSigner signer, PassPackager packager)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _signer = signer ?? throw new ArgumentNullException(nameof(signer));
@@ -40,7 +40,7 @@ public class PassGenerator
     /// <param name="pass">The pass to generate.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The packaged .pkpass bytes.</returns>
-    public virtual async Task<byte[]> GenerateAsync(Pass pass, CancellationToken cancellationToken = default)
+    public async Task<byte[]> GenerateAsync(Pass pass, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(pass);
         PassValidator.ValidateForGeneration(pass);

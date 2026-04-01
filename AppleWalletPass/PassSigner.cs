@@ -9,7 +9,7 @@ namespace AppleWalletPass;
 /// <summary>
 /// Creates the Wallet manifest and detached PKCS#7 signature.
 /// </summary>
-public class PassSigner
+internal class PassSigner
 {
     /// <summary>
     /// Builds manifest.json bytes using SHA-1 hashes for every bundle file.

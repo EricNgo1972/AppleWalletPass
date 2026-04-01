@@ -1,23 +1,28 @@
 #pragma warning disable CS1591
-using System.Security.Cryptography.X509Certificates;
 using AppleWalletPass.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace AppleWalletPass;
 
-public sealed class WalletPassGenerationService(
-    WalletSigningSettingsStore settingsStore,
-    DesignerAssetStore assetStore,
-    IOptions<WalletDesignerOptions> options,
-    IHostEnvironment environment) : IWalletPassGenerationService
+public sealed class WalletPassGenerationService
 {
-    private readonly WalletSigningSettingsStore _settingsStore = settingsStore;
-    private readonly DesignerAssetStore _assetStore = assetStore;
-    private readonly WalletDesignerOptions _options = options.Value;
-    private readonly IHostEnvironment _environment = environment;
-    private readonly PassSigner _signer = new();
-    private readonly PassPackager _packager = new();
+    private readonly WalletSigningSettingsStore _settingsStore;
+    private readonly DesignerAssetStore _assetStore;
+    private readonly WalletDesignerOptions _options;
+    private readonly IHostEnvironment _environment;
+
+    public WalletPassGenerationService(
+        WalletSigningSettingsStore settingsStore,
+        DesignerAssetStore assetStore,
+        IOptions<WalletDesignerOptions> options,
+        IHostEnvironment environment)
+    {
+        _settingsStore = settingsStore;
+        _assetStore = assetStore;
+        _options = options.Value;
+        _environment = environment;
+    }
 
     public async Task<(byte[] FileBytes, string FileName)> GenerateAsync(PassDesignerModel design, CancellationToken cancellationToken)
     {
@@ -34,38 +39,26 @@ public sealed class WalletPassGenerationService(
         var logoAsset = await TryGetAssetAsync(design.LogoAsset.Token, cancellationToken).ConfigureAwait(false);
         var backgroundAsset = await TryGetAssetAsync(design.BackgroundAsset.Token, cancellationToken).ConfigureAwait(false);
 
-        var pass = BuildPass(design, settings);
-        var bundleFiles = new Dictionary<string, byte[]>(StringComparer.Ordinal)
-        {
-            ["pass.json"] = PassJson.SerializeToUtf8Bytes(pass),
-            ["icon.png"] = await File.ReadAllBytesAsync(iconAsset.FilePath, cancellationToken).ConfigureAwait(false),
-            ["icon@2x.png"] = await File.ReadAllBytesAsync(iconAsset.FilePath, cancellationToken).ConfigureAwait(false)
-        };
+        var pass = BuildPass(design, settings, iconAsset, logoAsset, backgroundAsset);
+        var signerPath = await WriteTemporaryCertificateAsync(settings.CertificateBytes, cancellationToken).ConfigureAwait(false);
 
-        if (logoAsset is not null)
+        try
         {
-            var logoBytes = await File.ReadAllBytesAsync(logoAsset.FilePath, cancellationToken).ConfigureAwait(false);
-            bundleFiles["logo.png"] = logoBytes;
-            bundleFiles["logo@2x.png"] = logoBytes;
+            var generator = new PassGenerator(new PassGeneratorOptions
+            {
+                P12CertificatePath = signerPath,
+                P12Passphrase = settings.CertificatePassword,
+                WwdrCertificatePath = wwdrPath,
+                OutputDirectory = null
+            });
+
+            var fileBytes = await generator.GenerateAsync(pass, cancellationToken).ConfigureAwait(false);
+            return (fileBytes, $"{SanitizeFileName(design.SerialNumber)}.pkpass");
         }
-
-        if (backgroundAsset is not null)
+        finally
         {
-            bundleFiles["background.png"] = await File.ReadAllBytesAsync(backgroundAsset.FilePath, cancellationToken).ConfigureAwait(false);
+            TryDeleteFile(signerPath);
         }
-
-        using var signerCert = new X509Certificate2(settings.CertificateBytes, settings.CertificatePassword, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
-        using var wwdrCert = await LoadWwdrAsync(wwdrPath, cancellationToken).ConfigureAwait(false);
-        bundleFiles["manifest.json"] = _signer.BuildManifest(bundleFiles);
-        bundleFiles["signature"] = _signer.Sign(
-            bundleFiles
-                .Where(static pair => pair.Key is not "manifest.json" and not "signature")
-                .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal),
-            signerCert,
-            wwdrCert);
-
-        var fileBytes = _packager.Package(new PassBundle(bundleFiles));
-        return (fileBytes, $"{SanitizeFileName(design.SerialNumber)}.pkpass");
     }
 
     private static string SanitizeFileName(string serialNumber)
@@ -75,7 +68,12 @@ public sealed class WalletPassGenerationService(
         return string.IsNullOrWhiteSpace(cleaned) ? $"pass-{Guid.NewGuid():N}" : cleaned;
     }
 
-    private Pass BuildPass(PassDesignerModel design, WalletSigningSettingsResolved settings)
+    private Pass BuildPass(
+        PassDesignerModel design,
+        WalletSigningSettingsResolved settings,
+        AssetFileRecord iconAsset,
+        AssetFileRecord? logoAsset,
+        AssetFileRecord? backgroundAsset)
     {
         var builder = new PassBuilder()
             .WithOrganization(
@@ -87,6 +85,18 @@ public sealed class WalletPassGenerationService(
             .WithSerial(design.SerialNumber)
             .WithLogoText(design.Title)
             .WithColors(design.BackgroundColor, "#FFFFFF", "#B4C8DC");
+
+        builder.WithIcon(iconAsset.FilePath, iconAsset.FilePath);
+
+        if (logoAsset is not null)
+        {
+            builder.WithLogo(logoAsset.FilePath, logoAsset.FilePath);
+        }
+
+        if (backgroundAsset is not null)
+        {
+            builder.WithBackground(backgroundAsset.FilePath);
+        }
 
         builder = design.PassType switch
         {
@@ -152,7 +162,7 @@ public sealed class WalletPassGenerationService(
         => string.IsNullOrWhiteSpace(design.BarcodeAltText) ? design.SerialNumber : design.BarcodeAltText.Trim();
 
     private async Task<AssetFileRecord?> TryGetAssetAsync(string? token, CancellationToken cancellationToken)
-        => string.IsNullOrWhiteSpace(token) ? null : await _assetStore.GetAsync(token, cancellationToken).ConfigureAwait(false);
+        => string.IsNullOrWhiteSpace(token) ? null : await _assetStore.GetRecordAsync(token, cancellationToken).ConfigureAwait(false);
 
     private async Task<AssetFileRecord> RequireAssetAsync(string? token, string slotName, CancellationToken cancellationToken)
     {
@@ -161,21 +171,32 @@ public sealed class WalletPassGenerationService(
             throw new InvalidOperationException($"Upload an {slotName} image before generating the pass.");
         }
 
-        var asset = await _assetStore.GetAsync(token, cancellationToken).ConfigureAwait(false);
+        var asset = await _assetStore.GetRecordAsync(token, cancellationToken).ConfigureAwait(false);
         return asset ?? throw new InvalidOperationException($"The uploaded {slotName} asset could not be found. Upload it again.");
     }
 
-    private static async Task<X509Certificate2> LoadWwdrAsync(string path, CancellationToken cancellationToken)
+    private async Task<string> WriteTemporaryCertificateAsync(byte[] certificateBytes, CancellationToken cancellationToken)
     {
-        var extension = Path.GetExtension(path);
-        if (extension.Equals(".pem", StringComparison.OrdinalIgnoreCase))
-        {
-            var pem = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-            return X509Certificate2.CreateFromPem(pem);
-        }
+        var tempDirectory = Path.Combine(_environment.ContentRootPath, "App_Data", "temp");
+        Directory.CreateDirectory(tempDirectory);
 
-        var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
-        return new X509Certificate2(bytes);
+        var path = Path.Combine(tempDirectory, $"{Guid.NewGuid():N}.p12");
+        await File.WriteAllBytesAsync(path, certificateBytes, cancellationToken).ConfigureAwait(false);
+        return path;
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+        }
     }
 }
 #pragma warning restore CS1591

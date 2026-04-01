@@ -141,7 +141,7 @@ public sealed class WalletSigningSettingsViewModel : WalletSigningSettingsInput
     public DateTimeOffset? UpdatedAtUtc { get; set; }
 }
 
-public sealed class WalletSigningSettingsRecord
+internal sealed class WalletSigningSettingsRecord
 {
     public string? EncryptedCertificateBase64 { get; set; }
 
@@ -156,7 +156,7 @@ public sealed class WalletSigningSettingsRecord
     public DateTimeOffset UpdatedAtUtc { get; set; }
 }
 
-public sealed class WalletSigningSettingsResolved
+internal sealed class WalletSigningSettingsResolved
 {
     public required byte[] CertificateBytes { get; init; }
 
@@ -171,8 +171,4 @@ public sealed class WalletSigningSettingsResolved
     public DateTimeOffset UpdatedAtUtc { get; init; }
 }
 
-public sealed class GeneratePassRequest
-{
-    public required PassDesignerModel Design { get; init; }
-}
 #pragma warning restore CS1591

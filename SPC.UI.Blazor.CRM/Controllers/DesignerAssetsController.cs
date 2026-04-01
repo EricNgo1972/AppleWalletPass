@@ -6,7 +6,7 @@ namespace SPC.UI.Blazor.CRM.Controllers;
 
 [ApiController]
 [Route("api/assets")]
-public sealed class DesignerAssetsController(IDesignerAssetStore assetStore) : ControllerBase
+public sealed class DesignerAssetsController(DesignerAssetStore assetStore) : ControllerBase
 {
     private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -47,14 +47,13 @@ public sealed class DesignerAssetsController(IDesignerAssetStore assetStore) : C
     [HttpGet("{token}")]
     public async Task<IActionResult> GetAsync(string token, CancellationToken cancellationToken)
     {
-        var asset = await assetStore.GetAsync(token, cancellationToken).ConfigureAwait(false);
-        if (asset is null || !System.IO.File.Exists(asset.FilePath))
+        var asset = await assetStore.GetContentAsync(token, cancellationToken).ConfigureAwait(false);
+        if (asset is null)
         {
             return NotFound();
         }
 
-        var bytes = await System.IO.File.ReadAllBytesAsync(asset.FilePath, cancellationToken).ConfigureAwait(false);
-        return File(bytes, asset.ContentType, enableRangeProcessing: false);
+        return File(asset.Value.Content, asset.Value.ContentType, enableRangeProcessing: false);
     }
 
     private static string GetContentTypeFromExtension(string fileName)
